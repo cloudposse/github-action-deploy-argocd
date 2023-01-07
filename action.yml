@@ -1,18 +1,58 @@
-name: 'Example composite GitHub action'
-description: 'Example composite GitHub action'
+name: 'Deploy ArgoCD'
+description: 'Deploy on Kubernetes with ArgoCD'
 author: hello@cloudposse.com
 branding:
-  icon: 'file'
+  icon: 'cpu'
   color: 'white'
 inputs:
-  param1:
+  cluster:
+    description: Cluster name
     required: true
-    description: "Input parameter placeholder"
-    default: "true"
+  aws-region:
+    description: AWS region
+    required: false
+    default: us-east-1
+  helmfile-path:
+    description: The path where lives the helmfile.
+    required: false
+    default: deploy
+  helmfile:
+    description: Helmfile name
+    required: false
+    default: helmfile.yaml
+  operation:
+    description: Operation with helmfiles. (valid options - `deploy`, `destroy`)
+    required: true
+    default: deploy
+  environment:
+    description: Helmfile environment
+    required: false
+    default: preview
+  gitref-sha:
+    description: Git SHA
+    required: false
+    default: ''
+  namespace:
+    description: Kubernetes namespace
+    required: true
+  image:
+    description: Docker image
+    required: true
+  image-tag:
+    description: Docker image tag
+    required: true
+  debug:
+    description: Debug mode
+    default: 'false'
+    required: false
+  release_label_name:
+    description: The name of the label used to describe the helm release
+    default: "release"
+    required: false
 outputs:
-  result1:
-    description: "Output result placeholder"
-    value: "${{ steps.context.outputs.action-result }}"
+  webapp-url:
+    description: "Web Application url"
+    value: "https://example.com"
 runs:
   using: "composite"
   steps:

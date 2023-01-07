@@ -5,7 +5,7 @@
 #
 
 # Name of this project
-name: example-github-action-composite
+name: github-action-deploy-helmfile
 
 # Tags of this project
 tags:
@@ -18,13 +18,13 @@ tags:
 license: "APACHE2"
 
 # Canonical GitHub repo
-github_repo: cloudposse/example-github-action-composite
+github_repo: cloudposse/github-action-deploy-helmfile
 
 # Badges to display
 badges:
   - name: "Latest Release"
-    image: "https://img.shields.io/github/release/cloudposse/example-github-action-composite.svg"
-    url: "https://github.com/cloudposse/example-github-action-composite/releases/latest"
+    image: "https://img.shields.io/github/release/cloudposse/github-action-deploy-helmfile.svg"
+    url: "https://github.com/cloudposse/github-action-deploy-helmfile/releases/latest"
   - name: "Slack Community"
     image: "https://slack.cloudposse.com/badge.svg"
     url: "https://slack.cloudposse.com"
@@ -32,11 +32,10 @@ badges:
 related: []
 
 # Short description of this project
-description: Template repository of composite GitHub Action
+description: Deploy on Kubernetes with HelmFile
 
 introduction: |-
-  This is template repository to create composite GitHub Actions. 
-  Feel free to use it as reference and starting point.
+  Deploy on Kubernetes with HelmFile. 
 
 references:
   - name: "github-actions-workflows"
@@ -48,26 +47,76 @@ references:
 
 # How to use this project
 usage: |-
+  Deploy environment
   ```yaml
     name: Pull Request
     on:
       pull_request:
         branches: [ 'main' ]
-        types: [opened, synchronize, reopened, closed, labeled, unlabeled]
+        types: [opened, synchronize, reopened]
 
     jobs:
-      context:
+      deploy:
+        runs-on: ubuntu-latest
+        environment:
+          name: preview
+          url: ${{ steps.deploy.outputs.webapp-url }}  
+        steps:
+          
+          - name: Configure AWS Credentials
+            uses: aws-actions/configure-aws-credentials@v1.7.0
+            with:
+              aws-region: us-west-2
+              role-to-assume: arn:aws:iam::111111111111:role/preview
+              role-session-name: deploy
+        
+          - name: Deploy
+            uses: cloudposse/github-action-deploy-helmfile@main
+            id: deploy
+            with:
+              aws-region: us-west-2
+              cluster: preview-eks
+              environment: preview
+              namespace: preview
+              image: nginx
+              image-tag: latest
+              operation: deploy
+              debug: false
+    ```
+
+
+  Destroy environment
+  ```yaml
+    name: Pull Request
+    on:
+      pull_request:
+        branches: [ 'main' ]
+        types: [closed]
+
+    jobs:
+      destroy:
         runs-on: ubuntu-latest
         steps:
-          - name: Example action
-            uses: cloudposse/example-github-action-composite@main
-            id: example
+          - name: Configure AWS Credentials
+            uses: aws-actions/configure-aws-credentials@v1.7.0
             with:
-              param1: true
-  
-        outputs:
-          result: ${{ steps.example.outputs.result1 }}
-  ```
+              aws-region: us-west-2
+              role-to-assume: arn:aws:iam::111111111111:role/preview
+              role-session-name: destroy          
+        
+          - name: Destroy
+            uses: cloudposse/github-action-deploy-helmfile@main
+            id: destroy
+            with:
+              aws-region: us-west-2
+              cluster: preview-eks
+              environment: preview
+              namespace: preview
+              image: "<none>"
+              image-tag: "<none>"
+              operation: destroy
+              debug: false
+    ```
 
 include:
   - "docs/github-action.md"
