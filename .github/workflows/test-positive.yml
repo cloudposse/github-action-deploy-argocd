@@ -24,6 +24,9 @@ jobs:
         ports:
           - 4566:4566
           - 4510-4559:4510-4559
+        credentials:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
 #      - name: Start LocalStack
 #        uses: HarshCasper/setup-localstack@v0.1.1
@@ -49,7 +52,8 @@ jobs:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
           AWS_DEFAULT_REGION: us-east-1
-          AWS_ENDPOINT_OVERRIDE: http://localstack:4566
+          ## Use localhost to connect localstack because the commands runs not in a container
+          AWS_ENDPOINT_OVERRIDE: http://localhost:4566
 
 
       - uses: ./
