@@ -68,3 +68,9 @@ runs:
       with:
         args: --verbose export platform/${{ inputs.cluster }}/${{ inputs.environment }} --format yaml --output-file ./platform.yaml
 
+    - name: YQ Platform settings
+      shell: bash
+      run: |
+        yq --exit-status --no-colors --inplace eval '{"platform": .}' ./platform.yaml
+
+
