@@ -63,6 +63,13 @@ runs:
         download-compressed: true
         force: true
 
+    - name: Setup helmfile
+      uses: mamezou-tech/setup-helmfile@v1.2.0
+      with:
+        helmfile-version: v0.148.1
+        helm-version: v3.10.2
+        install-kubectl: false
+
     - name: AWS Get caller identity
       uses: docker://segment/chamber:2.11.0
       with:
@@ -72,5 +79,12 @@ runs:
       shell: bash
       run: |
         yq --exit-status --no-colors --inplace eval '{"platform": .}' ./platform.yaml
+
+    - name: Helmfile render
+      shell: bash
+      run: |
+        helmfile --namespace ${{ inputs.namespace }} \
+                --environment ${{ inputs.environment }} \
+                --file ${{ inputs.helmfile-path}}/${{ inputs.helmfile }} --values ./platform.yaml template
 
 
