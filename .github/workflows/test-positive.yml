@@ -19,6 +19,12 @@ jobs:
     continue-on-error: true
     needs: [setup]
     steps:
+      - name: Start LocalStack
+        uses: HarshCasper/setup-localstack@v0.1.1
+        with:
+          image-tag: 'latest'
+          install-awslocal: 'true'
+
       - name: Checkout
         uses: actions/checkout@v3
 

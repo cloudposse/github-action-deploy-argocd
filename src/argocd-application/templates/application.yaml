@@ -1,0 +1,33 @@
+{{ $root := .}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Name | quote }}
+  labels:
+    {{- include "argocd-application.labels" . | nindent 4 }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: {{ .Values.targetNamespace | quote }}
+    server: 'https://kubernetes.default.svc'
+  project: {{ .Values.project | quote }}
+  source:
+    path: {{ .Values.path | quote }}
+    repoURL: {{ .Values.repository | quote }}
+    targetRevision: {{ .Values.sha | quote }}
+    helm:
+      version: v3
+      values: |
+{{- toYaml .Values.values | nindent 8 }}
+      parameters:
+        - name: image.repository
+          value: {{ .Values.image.repository | quote }}
+        - name: image.tag
+          value: {{ .Values.image.tag | quote }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace={{ .Values.createNamespace }}

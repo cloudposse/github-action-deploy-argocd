@@ -1,0 +1,10 @@
+project: default
+targetNamespace:
+createNamespace: false
+path:
+repository:
+sha:
+values:
+image:
+  repository: nginx
+  tag: ""
