@@ -61,8 +61,8 @@ jobs:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
           AWS_DEFAULT_REGION: us-east-1
-          AWS_ENDPOINT_OVERRIDE: http://localhost:4566
-          CHAMBER_AWS_SSM_ENDPOINT: http://localhost:4566/
+          AWS_ENDPOINT_OVERRIDE: http://aws:4566
+          CHAMBER_AWS_SSM_ENDPOINT: http://aws:4566/
 
     outputs:
       result: "${{ steps.current.outputs.result1 }}"
