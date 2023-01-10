@@ -61,6 +61,7 @@ jobs:
         with:
           cluster: test-cluster
           environment: staging
+          namespace: staging
         env:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
