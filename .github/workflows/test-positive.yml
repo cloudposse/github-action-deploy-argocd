@@ -19,14 +19,11 @@ jobs:
     continue-on-error: true
     needs: [setup]
     steps:
-      - run: |
-          pip install boto3==1.25.0
-          
       - name: Start LocalStack
         uses: HarshCasper/setup-localstack@v0.1.1
         with:
           image-tag: 'latest'
-          install-awslocal: 'true'
+          install-awslocal: 'false'
 
       - name: Checkout
         uses: actions/checkout@v3
