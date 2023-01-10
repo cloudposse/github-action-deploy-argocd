@@ -67,6 +67,4 @@ runs:
       uses: docker://segment/chamber:2.11.0
       with:
         args: export platform/${{ inputs.cluster }}/${{ inputs.environment }} --format yaml --output-file ./platform.yaml
-      env:
-        CHAMBER_AWS_SSM_ENDPOINT: ${{ env.AWS_ENDPOINT_OVERRIDE }}
 
