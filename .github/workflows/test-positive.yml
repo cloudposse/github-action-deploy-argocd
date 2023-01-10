@@ -49,7 +49,8 @@ jobs:
       - uses: ./
         id: current
         with:
-          param1: 'true'
+          cluster: test-cluster
+          environment: staging
         env:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
