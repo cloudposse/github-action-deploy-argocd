@@ -43,8 +43,8 @@ jobs:
           aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} ssm put-parameter \
             --name "/platform/test-cluster/staging/default_alb_ingress_group" \
             --type "SecureString" \
-            --value "default"
-
+            --value "default" \
+            --debug
         env:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
