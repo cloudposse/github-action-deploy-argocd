@@ -56,8 +56,19 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: 'Setup yq'
+      uses: dcarbone/install-yq-action@v1.0.1
+      with:
+        version: v4.28.1
+        download-compressed: true
+        force: true
+
     - name: AWS Get caller identity
       shell: bash
       run: |
         aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} ssm put-parameter --name "MyStringParameter" --type "String" --value "Vici"
+        CHAMBER_AWS_SSM_ENDPOINT=${AWS_ENDPOINT_OVERRIDE}
+        # Read platform specific configs/info
+        chamber export platform/${CLUSTER_NAME}/${ENVIRONMENT} --format yaml | yq --exit-status --no-colors  eval '{"platform": .}' - > /tmp/platform.yaml
+
 
