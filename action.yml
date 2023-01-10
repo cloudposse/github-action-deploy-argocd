@@ -59,5 +59,6 @@ runs:
     - name: AWS Get caller identity
       shell: bash
       run: |
-        aws --endpoint-url=http://localhost:4566 ssm put-parameter --name "MyStringParameter" --type "String" --value "Vici"
+        alias aws='aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} '
+        aws ssm put-parameter --name "MyStringParameter" --type "String" --value "Vici"
 
