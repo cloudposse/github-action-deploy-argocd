@@ -28,8 +28,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - run: alias aws='aws --endpoint-url=http://localhost:4566'
-
       - uses: ./
         id: current
         with:
