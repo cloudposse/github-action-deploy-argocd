@@ -66,4 +66,4 @@ runs:
     - name: AWS Get caller identity
       uses: docker://segment/chamber:2.11.0
       with:
-        entrypoint: ./test.sh
+        entrypoint: /github/workspace/test.sh
