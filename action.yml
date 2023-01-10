@@ -56,8 +56,8 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - id: context
+    - id: AWS Get caller identity
       shell: bash
       run: |
-          echo "::set-output name=action-result::${{ inputs.param1 }}"
+        aws sts --region {{ inputs.aws-region }} get-caller-identity
 
