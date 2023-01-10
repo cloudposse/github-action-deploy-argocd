@@ -66,4 +66,7 @@ runs:
     - name: AWS Get caller identity
       uses: docker://segment/chamber:2.11.0
       with:
-        entrypoint: /github/workspace/test.sh
+        args: platform/{{ inputs.cluster }}/{{ inputs.environment }} --format yaml
+      env:
+        CHAMBER_AWS_SSM_ENDPOINT: ${{ env.AWS_ENDPOINT_OVERRIDE }}
+
