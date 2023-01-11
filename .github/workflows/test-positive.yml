@@ -63,6 +63,7 @@ jobs:
           environment: staging
           namespace: staging
           helmfile-path: ./test/helmfile
+          application: test-app
         env:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test

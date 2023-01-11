@@ -35,6 +35,9 @@ inputs:
   namespace:
     description: Kubernetes namespace
     required: true
+  application:
+    description: Application name
+    required: true
   image:
     description: Docker image
     required: true
@@ -49,6 +52,9 @@ inputs:
     description: The name of the label used to describe the helm release
     default: "release"
     required: false
+  github-pat:
+    description: Github PAT to access argocd configuration repository
+    required: true
 outputs:
   webapp-url:
     description: "Web Application url"
@@ -70,6 +76,19 @@ runs:
         helm-version: v3.10.2
         install-kubectl: false
 
+    - id: destination
+      uses: theowenyoung/git-url-parse@v1
+      with:
+        url: ${{ inputs.cluster }}
+
+    - name: Checkout Argo Configuration
+      uses: actions/checkout@v2
+      with:
+        repository: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
+        ref: ${{ steps.destination.outputs.ref }}
+        token: ${{ inputs.github-pat }}
+        path: .destination
+
     - name: AWS Get caller identity
       uses: docker://segment/chamber:2.11.0
       with:
@@ -86,6 +105,15 @@ runs:
         helmfile --namespace ${{ inputs.namespace }} \
                 --environment ${{ inputs.environment }} \
                 --file ${{ inputs.helmfile-path}}/${{ inputs.helmfile }} \
-                --state-values-file $(pwd)/platform.yaml template
+                --state-values-file $(pwd)/platform.yaml template > \
+          .destination/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
 
-
+    - name: Commit files
+      uses: swinton/commit@v2.x
+      env:
+        GH_TOKEN: ${{ inputs.github-pat }}
+      with:
+        files: |
+          .destination/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
+        commit-message: Committing argocd manifest files
+        ref: refs/heads/${{ steps.destination.outputs.ref }}
