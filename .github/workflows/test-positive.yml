@@ -59,11 +59,12 @@ jobs:
       - uses: ./
         id: current
         with:
-          cluster: test-cluster
+          cluster: git@github.com:cloudposse/argocd-deploy-non-prod-test.git/plat/ue2-sandbox/argocd
           environment: staging
           namespace: staging
           helmfile-path: ./test/helmfile
           application: test-app
+          github-pat: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
         env:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
