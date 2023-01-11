@@ -85,6 +85,7 @@ runs:
       run: |
         helmfile --namespace ${{ inputs.namespace }} \
                 --environment ${{ inputs.environment }} \
-                --file ${{ inputs.helmfile-path}}/${{ inputs.helmfile }} --debug template --values ./platform.yaml
+                --file ${{ inputs.helmfile-path}}/${{ inputs.helmfile }} \
+                --state-values-file $(pwd)/platform.yaml template
 
 

@@ -1,10 +1,5 @@
 environments:
   default:
-    values:
-      - platform:
-          region: us-east-2
-          default_ingress_domain: example.com
-          default_alb_ingress_group: default
   preview:
   staging:
   production:
@@ -62,8 +57,8 @@ releases:
           enabled: true
           port: default
           annotations:
-            external-dns.alpha.kubernetes.io/target: {{ .Values.platform.default_ingress_domain }}
-            alb.ingress.kubernetes.io/group.name: {{ .Values.platform.default_alb_ingress_group }}
+            external-dns.alpha.kubernetes.io/target: {{ .StateValues.platform.default_ingress_domain }}
+            alb.ingress.kubernetes.io/group.name: {{ .StateValues.platform.default_alb_ingress_group }}
             kubernetes.io/ingress.class: alb
             alb.ingress.kubernetes.io/scheme: internet-facing
             alb.ingress.kubernetes.io/actions.ssl-redirect: '{"RedirectConfig":{"Port":"443","Protocol":"HTTPS","StatusCode":"HTTP_301"},"Type":"redirect"}'
@@ -71,15 +66,15 @@ releases:
             alb.ingress.kubernetes.io/ssl-redirect: "443"
             alb.ingress.kubernetes.io/target-type: ip
         {{- if eq .Environment.Name "preview" }}
-            external-dns.alpha.kubernetes.io/hostname: example-app-pr-{{ .Namespace }}.{{ .Values.platform.default_ingress_domain }}
+            external-dns.alpha.kubernetes.io/hostname: example-app-pr-{{ .Namespace }}.{{ .StateValues.platform.default_ingress_domain }}
             outputs.platform.cloudposse.com/webapp-url: "https://example-app-pr-{{ .Namespace }}.{{ .Values.platform.default_ingress_domain }}/dashboard"
           hosts:
-            "example-app-pr-{{ .Namespace }}.{{ .Values.platform.default_ingress_domain }}": /*
+            "example-app-pr-{{ .Namespace }}.{{ .StateValues.platform.default_ingress_domain }}": /*
         {{- else }}
-            external-dns.alpha.kubernetes.io/hostname: example-app.{{ .Values.platform.default_ingress_domain }}
+            external-dns.alpha.kubernetes.io/hostname: example-app.{{ .StateValues.platform.default_ingress_domain }}
             outputs.platform.cloudposse.com/webapp-url: "https://example-app.{{ .Values.platform.default_ingress_domain }}/dashboard"
           hosts:
-            "example-app.{{ .Values.platform.default_ingress_domain }}": /*
+            "example-app.{{ .StateValues.platform.default_ingress_domain }}": /*
         {{- end }}
 
       probes:
