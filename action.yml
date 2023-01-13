@@ -109,14 +109,28 @@ runs:
                 --state-values-file $(pwd)/platform.yaml template > \
           .destination/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
 
-    - name: Commit files
-      uses: actions-x/commit@v6
-      with:
-        email: bot@cloudposse.com
-        name: GitHub Actions Autocommitter
-        branch: main
-        repository: https://github.com/cloudposse/argocd-deploy-non-prod-test
-        files: ${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
-        token: ${{ inputs.github-pat }}
-        force: true
-        directory: .destination
+#    - name: Commit files
+#      uses: actions-x/commit@v6
+#      with:
+#        email: bot@cloudposse.com
+#        name: GitHub Actions Autocommitter
+#        branch: main
+#        repository: https://github.com/cloudposse/argocd-deploy-non-prod-test
+#        files: ${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
+#        token: ${{ inputs.github-pat }}
+#        force: false
+#        directory: .destination
+
+    - name: Push to Github
+      shell: bash
+      run: |-
+        git config --global user.email "bot@example.com"
+        git config --global user.name "Bot"
+        git config --global pull.rebase false
+        git config --global pull.ff only
+        
+        cd .destination
+        git add -A
+        git status
+        git diff-index --quiet HEAD || git commit -m "GitHub Actions Autocommitter"
+        git push origin main
