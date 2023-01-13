@@ -115,6 +115,7 @@ runs:
         email: bot@cloudposse.com
         name: GitHub Actions Autocommitter
         branch: main
+        repository: https://github.com/cloudposse/argocd-deploy-non-prod-test
         files: ${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
         token: ${{ inputs.github-pat }}
         force: true
