@@ -58,7 +58,7 @@ jobs:
       - uses: ./
         id: current
         with:
-          cluster: https://github.com/cloudposse/github-action-deploy-argocd/blob/main/plat/ue2-sandbox/argocd
+          cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/argocd
           # git@github.com:cloudposse/argocd-deploy-non-prod-test.git/plat/ue2-sandbox/argocd
           environment: staging
           namespace: staging
