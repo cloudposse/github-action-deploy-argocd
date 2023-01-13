@@ -92,7 +92,7 @@ runs:
     - name: AWS Get caller identity
       uses: docker://segment/chamber:2.11.0
       with:
-        args: --verbose export platform/${{ inputs.cluster }}/${{ inputs.environment }} --format yaml --output-file ./platform.yaml
+        args: --verbose export platform/default/${{ inputs.environment }} --format yaml --output-file ./platform.yaml
 
     - name: YQ Platform settings
       shell: bash

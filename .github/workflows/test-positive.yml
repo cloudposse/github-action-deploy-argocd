@@ -39,12 +39,12 @@ jobs:
 
       - run: |
           aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} ssm put-parameter \
-            --name "/platform/test-cluster/staging/default_ingress_domain" \
+            --name "/platform/default/staging/default_ingress_domain" \
             --type "SecureString" \
             --value "example.com"
           
           aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} ssm put-parameter \
-            --name "/platform/test-cluster/staging/default_alb_ingress_group" \
+            --name "/platform/default/staging/default_alb_ingress_group" \
             --type "SecureString" \
             --value "default" \
             --debug
@@ -54,7 +54,6 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
           ## Use localhost to connect localstack because the commands runs not in a container
           AWS_ENDPOINT_OVERRIDE: http://localhost:4566
-
 
       - uses: ./
         id: current
