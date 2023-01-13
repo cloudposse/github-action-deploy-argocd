@@ -102,6 +102,7 @@ runs:
     - name: Helmfile render
       shell: bash
       run: |
+        mkdir -p  .destination/${{ steps.destination.outputs.filepath }}
         helmfile --namespace ${{ inputs.namespace }} \
                 --environment ${{ inputs.environment }} \
                 --file ${{ inputs.helmfile-path}}/${{ inputs.helmfile }} \
