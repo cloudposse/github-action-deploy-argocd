@@ -110,11 +110,11 @@ runs:
           .destination/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
 
     - name: Commit files
-      uses: swinton/commit@v2.x
+      uses: zwaldowski/git-commit-action@v1
       env:
         GH_TOKEN: ${{ inputs.github-pat }}
       with:
-        files: |
-          .destination/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
-        commit-message: Committing argocd manifest files
-        ref: refs/heads/${{ steps.destination.outputs.ref }}
+        working_directory: .destination/${{ steps.destination.outputs.filepath }}
+        commit_message: Committing argocd manifest files
+        author_name: cloudposse_bot
+        author_email: bot@cloudposse.com
