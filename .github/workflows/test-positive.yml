@@ -28,12 +28,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
-#      - name: Start LocalStack
-#        uses: HarshCasper/setup-localstack@v0.1.1
-#        with:
-#          image-tag: 'latest'
-#          install-awslocal: 'false'
-
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -92,6 +86,29 @@ jobs:
           expected: ""
           actual: "${{ needs.test.outputs.sha }}"
           comparison: notEqual
+
+      - name: Checkout Argo Configuration
+        uses: actions/checkout@v2
+        with:
+          repository: cloudposse/argocd-deploy-non-prod-test
+          ref: ${{ needs.test.outputs.sha }}
+          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          path: ./assert
+
+      - name: Get Image
+        id: image
+        shell: bash
+        run: |-
+          image=$( \
+            yq eval-all '.spec.template.spec.containers[].image | select(. != null)' \
+              ./assert/plat/ue2-sandbox/argocd/test-app.yaml \
+          )
+          echo "value=${WEBAPP_URL}" >> $GITHUB_OUTPUT
+
+      - uses: nick-fields/assert-action@v1
+        with:
+          expected: "cloudposse/example-app:0.1.0"
+          actual: "${{ steps.image.outputs.value }}"
 
   teardown:
     runs-on: ubuntu-latest
