@@ -58,7 +58,7 @@ inputs:
 outputs:
   webapp-url:
     description: "Web Application url"
-    value: "https://example.com"
+    value: ${{ steps.result.outputs.webapp_url }}
 runs:
   using: "composite"
   steps:
@@ -113,6 +113,16 @@ runs:
                 --file ${{ inputs.helmfile-path}}/${{ inputs.helmfile }} \
                 --state-values-file $(pwd)/platform.yaml template > \
          ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
+
+    - name: Get Webapp
+      id: result
+      shell: bash
+      run: |-
+        WEBAPP_URL=$( \
+          yq eval-all '.metadata.annotations["outputs.platform.cloudposse.com/webapp-url"] | select(. != null)' \
+            ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml \
+        )
+        echo "webapp_url=${WEBAPP_URL}" >> $GITHUB_OUTPUT
 
     - name: Push to Github
       shell: bash
