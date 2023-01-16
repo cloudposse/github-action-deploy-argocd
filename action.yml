@@ -82,9 +82,9 @@ runs:
         url: ${{ inputs.cluster }}
 
     - id: destination_dir
-      uses: aammirmirza/RandomPasswordGenerator@v1.1
-      with:
-        length: 15
+      shell: bash
+      run: |-
+        echo "name=$(echo $RANDOM | md5sum | head -c 20)" >> $GITHUB_OUTPUT
 
     - name: Checkout Argo Configuration
       uses: actions/checkout@v2
@@ -92,7 +92,7 @@ runs:
         repository: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
         ref: ${{ steps.destination.outputs.ref }}
         token: ${{ inputs.github-pat }}
-        path: ${{ steps.destination_dir.outputs.password }}
+        path: ${{ steps.destination_dir.outputs.name }}
 
     - name: AWS Get caller identity
       uses: docker://segment/chamber:2.11.0
@@ -112,7 +112,7 @@ runs:
                 --environment ${{ inputs.environment }} \
                 --file ${{ inputs.helmfile-path}}/${{ inputs.helmfile }} \
                 --state-values-file $(pwd)/platform.yaml template > \
-          ${{ steps.destination_dir.outputs.password }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
+          ${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
 
     - name: Push to Github
       shell: bash
@@ -122,7 +122,7 @@ runs:
         git config --global pull.rebase false
         git config --global pull.ff only
         
-        cd ${{ steps.destination_dir.outputs.password }}
+        cd ${{ steps.destination_dir.outputs.name }}
         git add -A
         git status
         git diff-index --quiet HEAD || git commit -m "GitHub Actions Autocommitter"
