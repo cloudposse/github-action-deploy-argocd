@@ -15,9 +15,9 @@ jobs:
         run: echo "Do setup"
 
       - id: random
-        uses: aammirmirza/RandomPasswordGenerator@v1.1
-        with:
-          length: 15
+        shell: bash
+        run: |-
+          echo "password=$(echo $RANDOM | md5sum | head -c 20)" >> $GITHUB_OUTPUT
 
     outputs:
       random: ${{ steps.random.outputs.password }}

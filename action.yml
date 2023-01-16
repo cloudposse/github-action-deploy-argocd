@@ -114,8 +114,12 @@ runs:
         helmfile --namespace ${{ inputs.namespace }} \
                 --environment ${{ inputs.environment }} \
                 --file ${{ inputs.helmfile-path}}/${{ inputs.helmfile }} \
-                --state-values-file $(pwd)/platform.yaml template > \
+                --state-values-file $(pwd)/platform.yaml \
+                template > \
          ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
+      env:
+        IMAGE_NAME: ${{ inputs.image }}
+        IMAGE_TAG: ${{ inputs.image-tag }}
 
     - name: Get Webapp
       id: result
