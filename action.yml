@@ -81,13 +81,18 @@ runs:
       with:
         url: ${{ inputs.cluster }}
 
+    - id: destination_dir
+      uses: aammirmirza/RandomPasswordGenerator@v1.1
+      with:
+        length: 15
+
     - name: Checkout Argo Configuration
       uses: actions/checkout@v2
       with:
         repository: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
         ref: ${{ steps.destination.outputs.ref }}
         token: ${{ inputs.github-pat }}
-        path: .destination
+        path: ${{ steps.destination_dir.outputs.password }}
 
     - name: AWS Get caller identity
       uses: docker://segment/chamber:2.11.0
@@ -107,30 +112,18 @@ runs:
                 --environment ${{ inputs.environment }} \
                 --file ${{ inputs.helmfile-path}}/${{ inputs.helmfile }} \
                 --state-values-file $(pwd)/platform.yaml template > \
-          .destination/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
-
-#    - name: Commit files
-#      uses: actions-x/commit@v6
-#      with:
-#        email: bot@cloudposse.com
-#        name: GitHub Actions Autocommitter
-#        branch: main
-#        repository: https://github.com/cloudposse/argocd-deploy-non-prod-test
-#        files: ${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
-#        token: ${{ inputs.github-pat }}
-#        force: false
-#        directory: .destination
+          ${{ steps.destination_dir.outputs.password }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
 
     - name: Push to Github
       shell: bash
       run: |-
         git config --global user.email "bot@example.com"
-        git config --global user.name "Bot"
+        git config --global user.name "cloudpossebot"
         git config --global pull.rebase false
         git config --global pull.ff only
         
-        cd .destination
+        cd ${{ steps.destination_dir.outputs.password }}
         git add -A
         git status
         git diff-index --quiet HEAD || git commit -m "GitHub Actions Autocommitter"
-        git push origin main
+        git push origin ${{ steps.destination.outputs.ref }}
