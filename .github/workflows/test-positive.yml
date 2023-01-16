@@ -14,6 +14,15 @@ jobs:
       - name: Setup
         run: echo "Do setup"
 
+      - id: random
+        uses: aammirmirza/RandomPasswordGenerator@v1.1
+        with:
+          length: 15
+
+    outputs:
+      random: ${{ steps.random.outputs.password }}
+
+
   test:
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -59,6 +68,8 @@ jobs:
           helmfile-path: ./test/helmfile
           application: test-app
           github-pat: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          image: nginx
+          image-tag: ${{ needs.setup.outputs.random }}
         env:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
@@ -107,7 +118,7 @@ jobs:
 
       - uses: nick-fields/assert-action@v1
         with:
-          expected: "cloudposse/example-app:0.1.0"
+          expected: "nginx:${{ needs.setup.outputs.random }}"
           actual: "${{ steps.image.outputs.value }}"
 
   teardown:
