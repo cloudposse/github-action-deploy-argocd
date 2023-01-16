@@ -132,18 +132,24 @@ runs:
         echo "webapp_url=${WEBAPP_URL}" >> $GITHUB_OUTPUT
 
     - name: Push to Github
+      uses: nick-fields/retry@v2
       id: git
       shell: bash
-      run: |-
-        git config --global user.email "bot@example.com"
-        git config --global user.name "cloudpossebot"
-        git config --global pull.rebase false
-        git config --global pull.ff only
-        
-        cd ./${{ steps.destination_dir.outputs.name }}
-        git add -A
-        git status
-        git diff-index --quiet HEAD || git commit -m "GitHub Actions Autocommitter"
-        git push origin ${{ steps.destination.outputs.ref }}
-        
-        echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+      with:
+        timeout_minutes: 1
+        max_attempts: 4
+        shell: cmd
+        command: |-
+          git config --global user.email "bot@example.com"
+          git config --global user.name "cloudpossebot"
+          git config --global pull.rebase false
+          git config --global pull.ff only
+          
+          cd ./${{ steps.destination_dir.outputs.name }}
+          git pull
+          git add -A
+          git status
+          git diff-index --quiet HEAD || git commit -m "GitHub Actions Autocommitter"
+          git push origin ${{ steps.destination.outputs.ref }}
+          
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
