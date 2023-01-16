@@ -22,6 +22,16 @@ metadata:
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
+  external-dns.alpha.kubernetes.io/target: {{ .Values.platform.default_ingress_domain }}
+  alb.ingress.kubernetes.io/group.name: {{ .Values.platform.default_alb_ingress_group }}
+  kubernetes.io/ingress.class: alb
+  alb.ingress.kubernetes.io/scheme: internet-facing
+  alb.ingress.kubernetes.io/actions.ssl-redirect: '{"RedirectConfig":{"Port":"443","Protocol":"HTTPS","StatusCode":"HTTP_301"},"Type":"redirect"}'
+  alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+  alb.ingress.kubernetes.io/ssl-redirect: "443"
+  alb.ingress.kubernetes.io/target-type: ip
+  external-dns.alpha.kubernetes.io/hostname: example-app.{{ .Values.platform.default_ingress_domain }}
+  outputs.platform.cloudposse.com/webapp-url: "https://example-app.{{ .Values.platform.default_ingress_domain }}/dashboard"
 spec:
   {{- if and .Values.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
   ingressClassName: {{ .Values.ingress.className }}
@@ -30,6 +40,7 @@ spec:
   tls:
     {{- range .Values.ingress.tls }}
     - hosts:
+        - "example-app.{{ .Values.platform.default_ingress_domain }}"
         {{- range .hosts }}
         - {{ . | quote }}
         {{- end }}
@@ -37,6 +48,20 @@ spec:
     {{- end }}
   {{- end }}
   rules:
+    - host: example-app.{{ .Values.platform.default_ingress_domain }}
+      http:
+        paths:
+          - path: /
+            backend:
+              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ $svcPort }}
+              {{- else }}
+              serviceName: {{ $fullName }}
+              servicePort: {{ $svcPort }}
+              {{- end }}
     {{- range .Values.ingress.hosts }}
     - host: {{ .host | quote }}
       http:
