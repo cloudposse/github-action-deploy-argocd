@@ -59,6 +59,9 @@ outputs:
   webapp-url:
     description: "Web Application url"
     value: ${{ steps.result.outputs.webapp_url }}
+  sha:
+    description: "Git commit SHA into argocd repo"
+    value: ${{ steps.git.outputs.sha }}
 runs:
   using: "composite"
   steps:
@@ -125,6 +128,7 @@ runs:
         echo "webapp_url=${WEBAPP_URL}" >> $GITHUB_OUTPUT
 
     - name: Push to Github
+      id: git
       shell: bash
       run: |-
         git config --global user.email "bot@example.com"
@@ -137,3 +141,5 @@ runs:
         git status
         git diff-index --quiet HEAD || git commit -m "GitHub Actions Autocommitter"
         git push origin ${{ steps.destination.outputs.ref }}
+        
+        echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
