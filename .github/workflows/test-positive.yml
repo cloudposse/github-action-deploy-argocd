@@ -76,6 +76,7 @@ jobs:
 
     outputs:
       result: ${{ steps.current.outputs.webapp-url }}
+      sha: ${{ steps.current.outputs.sha }}
 
   assert:
     runs-on: ubuntu-latest
@@ -85,6 +86,12 @@ jobs:
         with:
           expected: "https://example-app.example.com/dashboard"
           actual: "${{ needs.test.outputs.result }}"
+
+      - uses: nick-fields/assert-action@v1
+        with:
+          expected: ""
+          actual: "${{ needs.test.outputs.sha }}"
+          comparison: notEqual
 
   teardown:
     runs-on: ubuntu-latest
