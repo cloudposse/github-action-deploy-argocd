@@ -63,10 +63,9 @@ jobs:
         with:
           cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/argocd
           toolchain: helmfile
-          mode: raw
           environment: staging
           namespace: staging
-          helmfile-path: ./test/helmfile
+          path: ./test/helmfile/helmfile.yaml
           application: test-app
           github-pat: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           image: nginx

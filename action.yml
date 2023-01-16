@@ -12,14 +12,13 @@ inputs:
     description: AWS region
     required: false
     default: us-east-1
-  helmfile-path:
-    description: The path where lives the helmfile.
+  path:
+    description: The path where lives the helmfile or helm chart.
+    required: true
+  toolchain:
+    description: Toolchain ('helm', 'helmfile', 'helm-raw')
     required: false
-    default: deploy
-  helmfile:
-    description: Helmfile name
-    required: false
-    default: helmfile.yaml
+    default: helmfile
   operation:
     description: Operation with helmfiles. (valid options - `deploy`, `destroy`)
     required: true
@@ -113,7 +112,7 @@ runs:
         mkdir -p  ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}
         helmfile --namespace ${{ inputs.namespace }} \
                 --environment ${{ inputs.environment }} \
-                --file ${{ inputs.helmfile-path}}/${{ inputs.helmfile }} \
+                --file ${{ inputs.path}}/${{ inputs.helmfile }} \
                 --state-values-file $(pwd)/platform.yaml \
                 template > \
          ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
