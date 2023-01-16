@@ -134,11 +134,10 @@ runs:
     - name: Push to Github
       uses: nick-fields/retry@v2
       id: git
-      shell: bash
       with:
         timeout_minutes: 1
         max_attempts: 4
-        shell: cmd
+        shell: bash
         command: |-
           git config --global user.email "bot@example.com"
           git config --global user.name "cloudpossebot"
