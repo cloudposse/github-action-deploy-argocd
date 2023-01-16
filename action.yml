@@ -112,7 +112,7 @@ runs:
         mkdir -p  ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}
         helmfile --namespace ${{ inputs.namespace }} \
                 --environment ${{ inputs.environment }} \
-                --file ${{ inputs.path}}/${{ inputs.helmfile }} \
+                --file ${{ inputs.path}} \
                 --state-values-file $(pwd)/platform.yaml \
                 template > \
          ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
