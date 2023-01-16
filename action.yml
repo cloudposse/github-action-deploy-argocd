@@ -128,7 +128,7 @@ runs:
       shell: bash
       run: |
         mkdir -p  ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}
-        helm3 template ${{ inputs.application }} ${{ inputs.path }} \
+        helm template ${{ inputs.application }} ${{ inputs.path }} \
           --set image.repository=${{ inputs.image }} \
           --set image.tag=${{ inputs.image-tag }} \
           --create-namespace=true \
