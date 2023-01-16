@@ -103,7 +103,7 @@ jobs:
             yq eval-all '.spec.template.spec.containers[].image | select(. != null)' \
               ./assert/plat/ue2-sandbox/argocd/test-app.yaml \
           )
-          echo "value=${WEBAPP_URL}" >> $GITHUB_OUTPUT
+          echo "value=${image}" >> $GITHUB_OUTPUT
 
       - uses: nick-fields/assert-action@v1
         with:
