@@ -107,6 +107,8 @@ runs:
         yq --exit-status --no-colors --inplace eval '{"platform": .}' ./platform.yaml
 
     - name: Helmfile render
+      id: helmfile
+      if: ${{ inputs.toolchain == 'helmfile' }}
       shell: bash
       run: |
         mkdir -p  ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}
@@ -116,6 +118,24 @@ runs:
                 --state-values-file $(pwd)/platform.yaml \
                 template > \
          ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
+      env:
+        IMAGE_NAME: ${{ inputs.image }}
+        IMAGE_TAG: ${{ inputs.image-tag }}
+
+    - name: Helm render
+      id: helm
+      if: ${{ inputs.toolchain == 'helm-raw' }}
+      shell: bash
+      run: |
+        mkdir -p  ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}
+        helm3 template ${{ inputs.application }} ${{ inputs.path }} \
+          --set image.repository=${{ inputs.image }} \
+          --set image.tag=${{ inputs.image-tag }} \
+          --create-namespace=true \
+          --namespace ${{ inputs.namespace }} \
+          --set ingress.default.hosts.example=test \
+          --values $(pwd)/platform.yaml \
+        > ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
       env:
         IMAGE_NAME: ${{ inputs.image }}
         IMAGE_TAG: ${{ inputs.image-tag }}
