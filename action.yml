@@ -179,7 +179,6 @@ runs:
 
     - name: Helm ref render
       if: ${{ inputs.toolchain == 'helm' }}
-      shell: bash
       uses: 1arp/create-a-file-action@0.2
       with:
         path: ${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}
