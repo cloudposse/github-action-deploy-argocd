@@ -154,22 +154,22 @@ runs:
                 - resources-finalizer.argocd.argoproj.io
             spec:
               destination:
-                namespace: ${{ inputs.namespace }}
-                server: 'https://kubernetes.default.svc'
+                  namespace: ${{ inputs.namespace }}
+                  server: 'https://kubernetes.default.svc'
               project: default
               source:
-                path: ${{ inputs.path }}
-                repoURL: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
-                targetRevision: ${{ inputs.gitref-sha }}
-                helm:
-                  version: v3
-                  values: |
-                      {{- toYaml .Values.values | nindent 8 }}
+                  path: ${{ inputs.path }}
+                  repoURL: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
+                  targetRevision: ${{ inputs.gitref-sha }}
+                  helm:
+                    version: v3
+                    values: |
+                        {{- toYaml .Values.values | nindent 8 }}
             parameters:
-              - name: image.repository
-                value: ${{ inputs.image }}
-              - name: image.tag
-                value: ${{ inputs.image-tag }}
+                - name: image.repository
+                  value: ${{ inputs.image }}
+                - name: image.tag
+                  value: ${{ inputs.image-tag }}
             syncPolicy:
               automated:
                 prune: true
