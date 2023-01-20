@@ -205,7 +205,7 @@ runs:
           deployment_id: 1
           app_repository: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
           app_commit: ${{ inputs.gitref-sha }}
-          app_hostname: ${{ steps.result.output.webapp_url }}
+          app_hostname: ${{ steps.result.outputs.webapp_url }}
           name: ${{ steps.destination.outputs.name }}
           namespace: ${{ inputs.namespace }}
           manifests: ${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests
