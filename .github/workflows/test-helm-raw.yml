@@ -1,4 +1,4 @@
-name: Test example positive
+name: Test - Helm raw
 on:
 #  # Uncomment when test added first time to register workflow and comment it back after workflow would be registered
 #  #
@@ -14,6 +14,14 @@ jobs:
       - name: Setup
         run: echo "Do setup"
 
+      - id: random
+        shell: bash
+        run: |-
+          echo "password=$(echo $RANDOM | md5sum | head -c 20)" >> $GITHUB_OUTPUT
+
+    outputs:
+      random: ${{ steps.random.outputs.password }}
+
   test:
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -28,12 +36,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
-#      - name: Start LocalStack
-#        uses: HarshCasper/setup-localstack@v0.1.1
-#        with:
-#          image-tag: 'latest'
-#          install-awslocal: 'false'
-
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -58,13 +60,15 @@ jobs:
       - uses: ./
         id: current
         with:
-          cluster: https://github.com/cloudposse/github-action-deploy-argocd/blob/main/plat/ue2-sandbox/argocd
-          # git@github.com:cloudposse/argocd-deploy-non-prod-test.git/plat/ue2-sandbox/argocd
+          cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/argocd
+          toolchain: helm-raw
           environment: staging
           namespace: staging
-          helmfile-path: ./test/helmfile
+          path: ./test/helm/example-app
           application: test-app
           github-pat: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          image: nginx
+          image-tag: ${{ needs.setup.outputs.random }}
         env:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
@@ -75,16 +79,46 @@ jobs:
           CHAMBER_AWS_SSM_ENDPOINT: http://localstack:4566/
 
     outputs:
-      result: "${{ steps.current.outputs.result1 }}"
+      result: ${{ steps.current.outputs.webapp-url }}
+      sha: ${{ steps.current.outputs.sha }}
 
   assert:
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: [setup, test]
     steps:
       - uses: nick-fields/assert-action@v1
         with:
-          expected: 'true'
+          expected: "https://example-app.example.com/dashboard"
           actual: "${{ needs.test.outputs.result }}"
+
+      - uses: nick-fields/assert-action@v1
+        with:
+          expected: ""
+          actual: "${{ needs.test.outputs.sha }}"
+          comparison: notEqual
+
+      - name: Checkout Argo Configuration
+        uses: actions/checkout@v2
+        with:
+          repository: cloudposse/argocd-deploy-non-prod-test
+          ref: ${{ needs.test.outputs.sha }}
+          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          path: ./assert
+
+      - name: Get Image
+        id: image
+        shell: bash
+        run: |-
+          image=$( \
+            yq eval-all '.spec.template.spec.containers[].image | select(. != null)' \
+              ./assert/plat/ue2-sandbox/argocd/test-app.yaml \
+          )
+          echo "value=${image}" >> $GITHUB_OUTPUT
+
+      - uses: nick-fields/assert-action@v1
+        with:
+          expected: "nginx:${{ needs.setup.outputs.random }}"
+          actual: "${{ steps.image.outputs.value }}"
 
   teardown:
     runs-on: ubuntu-latest

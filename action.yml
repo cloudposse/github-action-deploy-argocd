@@ -12,14 +12,13 @@ inputs:
     description: AWS region
     required: false
     default: us-east-1
-  helmfile-path:
-    description: The path where lives the helmfile.
+  path:
+    description: The path where lives the helmfile or helm chart.
+    required: true
+  toolchain:
+    description: Toolchain ('helm', 'helmfile', 'helm-raw')
     required: false
-    default: deploy
-  helmfile:
-    description: Helmfile name
-    required: false
-    default: helmfile.yaml
+    default: helmfile
   operation:
     description: Operation with helmfiles. (valid options - `deploy`, `destroy`)
     required: true
@@ -58,7 +57,10 @@ inputs:
 outputs:
   webapp-url:
     description: "Web Application url"
-    value: "https://example.com"
+    value: ${{ steps.result.outputs.webapp_url }}
+  sha:
+    description: "Git commit SHA into argocd repo"
+    value: ${{ steps.git.outputs.sha }}
 runs:
   using: "composite"
   steps:
@@ -81,13 +83,18 @@ runs:
       with:
         url: ${{ inputs.cluster }}
 
+    - id: destination_dir
+      shell: bash
+      run: |-
+        echo "name=$(echo $RANDOM | md5sum | head -c 20)" >> $GITHUB_OUTPUT
+
     - name: Checkout Argo Configuration
       uses: actions/checkout@v2
       with:
         repository: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
         ref: ${{ steps.destination.outputs.ref }}
         token: ${{ inputs.github-pat }}
-        path: .destination
+        path: ${{ steps.destination_dir.outputs.name }}
 
     - name: AWS Get caller identity
       uses: docker://segment/chamber:2.11.0
@@ -100,22 +107,107 @@ runs:
         yq --exit-status --no-colors --inplace eval '{"platform": .}' ./platform.yaml
 
     - name: Helmfile render
+      if: ${{ inputs.toolchain == 'helmfile' }}
       shell: bash
       run: |
-        mkdir -p  .destination/${{ steps.destination.outputs.filepath }}
+        mkdir -p  ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}
         helmfile --namespace ${{ inputs.namespace }} \
                 --environment ${{ inputs.environment }} \
-                --file ${{ inputs.helmfile-path}}/${{ inputs.helmfile }} \
-                --state-values-file $(pwd)/platform.yaml template > \
-          .destination/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
+                --file ${{ inputs.path}} \
+                --state-values-file $(pwd)/platform.yaml \
+                template > \
+         ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
+      env:
+        IMAGE_NAME: ${{ inputs.image }}
+        IMAGE_TAG: ${{ inputs.image-tag }}
 
-    - name: Commit files
-      uses: actions-x/commit@v6
+    - name: Helm raw render
+      if: ${{ inputs.toolchain == 'helm-raw' }}
+      shell: bash
+      run: |
+        mkdir -p  ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}
+        helm template ${{ inputs.application }} ${{ inputs.path }} \
+          --set image.repository=${{ inputs.image }} \
+          --set image.tag=${{ inputs.image-tag }} \
+          --create-namespace=true \
+          --namespace ${{ inputs.namespace }} \
+          --set ingress.default.hosts.example=test \
+          --values $(pwd)/platform.yaml \
+        > ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
+      env:
+        IMAGE_NAME: ${{ inputs.image }}
+        IMAGE_TAG: ${{ inputs.image-tag }}
+
+    - name: Helm render
+      if: ${{ inputs.toolchain == 'helm' }}
+      uses: 1arp/create-a-file-action@0.2
       with:
-        email: bot@cloudposse.com
-        name: GitHub Actions Autocommitter
-        branch: main
-        files: ${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
-        token: ${{ inputs.github-pat }}
-        force: true
-        directory: .destination
+        path: ${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}
+        file: ${{ inputs.application }}.yaml
+        content: |-
+          apiVersion: argoproj.io/v1alpha1
+          kind: Application
+          metadata:
+            name: ${{ inputs.application }}
+            namespace: argocd
+            annotations:
+              outputs.platform.cloudposse.com/webapp-url: "<unknown endpoint>"
+            finalizers:
+              - resources-finalizer.argocd.argoproj.io
+          spec:
+            destination:
+              namespace: ${{ inputs.namespace }}
+              server: 'https://kubernetes.default.svc'
+            project: default
+            source:
+              path: ${{ inputs.path }}
+              repoURL: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
+              targetRevision: ${{ inputs.gitref-sha }}
+              helm:
+                version: v3
+                values: |
+                    {{- toYaml .Values.values | nindent 8 }}
+          parameters:
+            - name: image.repository
+              value: ${{ inputs.image }}
+            - name: image.tag
+              value: ${{ inputs.image-tag }}
+          syncPolicy:
+            automated:
+              prune: true
+              selfHeal: true
+            syncOptions:
+              - CreateNamespace=true          
+
+    - name: Get Webapp
+      id: result
+      shell: bash
+      run: |-
+        cat ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml    
+        WEBAPP_URL=$( \
+          yq eval-all '.metadata.annotations["outputs.platform.cloudposse.com/webapp-url"] | select(. != null)' \
+            ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml \
+        )
+        echo "webapp_url=${WEBAPP_URL}" >> $GITHUB_OUTPUT
+
+    - name: Push to Github
+      uses: nick-fields/retry@v2
+      id: git
+      with:
+        timeout_minutes: 1
+        max_attempts: 4
+        shell: bash
+        command: |-
+          git config --global user.email "bot@example.com"
+          git config --global user.name "cloudpossebot"
+          git config --global pull.rebase false
+          git config --global pull.ff only
+          
+          cd ./${{ steps.destination_dir.outputs.name }}
+          git pull
+          git add -A
+          git status
+          git diff-index --quiet HEAD || git commit -m "GitHub Actions Autocommitter"
+          git push origin ${{ steps.destination.outputs.ref }}
+          
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
