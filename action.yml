@@ -109,17 +109,21 @@ runs:
       run: |
         yq --exit-status --no-colors --inplace eval '{"platform": .}' ./platform.yaml
 
+    - name: Ensure argocd repo structure
+      shell: bash
+      run: |
+        mkdir -p  ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests        
+
     - name: Helmfile render
       if: ${{ inputs.toolchain == 'helmfile' }}
       shell: bash
       run: |
-        mkdir -p  ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}
         helmfile --namespace ${{ inputs.namespace }} \
                 --environment ${{ inputs.environment }} \
                 --file ${{ inputs.path}} \
                 --state-values-file $(pwd)/platform.yaml \
                 template > \
-         ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
+        > ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests/resources.yaml
       env:
         IMAGE_NAME: ${{ inputs.image }}
         IMAGE_TAG: ${{ inputs.image-tag }}
@@ -128,7 +132,6 @@ runs:
       if: ${{ inputs.toolchain == 'helm-raw' }}
       shell: bash
       run: |
-        mkdir -p  ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}
         helm template ${{ inputs.application }} ${{ inputs.path }} \
           --set image.repository=${{ inputs.image }} \
           --set image.tag=${{ inputs.image-tag }} \
@@ -136,7 +139,7 @@ runs:
           --namespace ${{ inputs.namespace }} \
           --set ingress.default.hosts.example=test \
           --values $(pwd)/platform.yaml \
-        > ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
+        > ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests/resources.yaml
       env:
         IMAGE_NAME: ${{ inputs.image }}
         IMAGE_TAG: ${{ inputs.image-tag }}
@@ -145,8 +148,8 @@ runs:
       if: ${{ inputs.toolchain == 'helm' }}
       uses: 1arp/create-a-file-action@0.2
       with:
-        path: ${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}
-        file: ${{ inputs.application }}.yaml
+        path: ${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests
+        file: resources.yaml
         content: |-
           apiVersion: argoproj.io/v1alpha1
           kind: Application
@@ -186,10 +189,9 @@ runs:
       id: result
       shell: bash
       run: |-
-        cat ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml    
         WEBAPP_URL=$( \
           yq eval-all '.metadata.annotations["outputs.platform.cloudposse.com/webapp-url"] | select(. != null)' \
-            ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml \
+            ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests/resources.yaml \
         )
         echo "webapp_url=${WEBAPP_URL}" >> $GITHUB_OUTPUT
 
