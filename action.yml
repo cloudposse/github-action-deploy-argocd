@@ -119,11 +119,11 @@ runs:
       shell: bash
       run: |
         helmfile --namespace ${{ inputs.namespace }} \
-                --environment ${{ inputs.environment }} \
-                --file ${{ inputs.path}} \
-                --state-values-file $(pwd)/platform.yaml \
-                template > \
-        > ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests/resources.yaml
+          --environment ${{ inputs.environment }} \
+          --file ${{ inputs.path}} \
+          --state-values-file $(pwd)/platform.yaml \
+          template \
+          > ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests/resources.yaml
       env:
         IMAGE_NAME: ${{ inputs.image }}
         IMAGE_TAG: ${{ inputs.image-tag }}
