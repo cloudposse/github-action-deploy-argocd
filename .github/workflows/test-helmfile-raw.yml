@@ -61,7 +61,7 @@ jobs:
       - uses: ./
         id: current
         with:
-          cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/argocd
+          cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
           toolchain: helmfile
           environment: staging
           namespace: staging
@@ -100,7 +100,7 @@ jobs:
           comparison: notEqual
 
       - name: Checkout Argo Configuration
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: cloudposse/argocd-deploy-non-prod-test
           ref: ${{ needs.test.outputs.sha }}
@@ -113,7 +113,7 @@ jobs:
         run: |-
           image=$( \
             yq eval-all '.spec.template.spec.containers[].image | select(. != null)' \
-              ./assert/plat/ue2-sandbox/argocd/test-app.yaml \
+              ./assert/plat/ue2-sandbox/apps/staging/test-app/manifests/resources.yaml \
           )
           echo "value=${image}" >> $GITHUB_OUTPUT
 
