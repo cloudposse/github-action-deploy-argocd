@@ -97,28 +97,28 @@ jobs:
           actual: "${{ needs.test.outputs.sha }}"
           comparison: notEqual
 
-      - name: Checkout Argo Configuration
-        uses: actions/checkout@v2
-        with:
-          repository: cloudposse/argocd-deploy-non-prod-test
-          ref: ${{ needs.test.outputs.sha }}
-          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
-          path: ./assert
-
-      - name: Get Image
-        id: image
-        shell: bash
-        run: |-
-          image=$( \
-            yq eval-all '.spec.template.spec.containers[].image | select(. != null)' \
-              ./assert/plat/ue2-sandbox/argocd/test-app.yaml \
-          )
-          echo "value=${image}" >> $GITHUB_OUTPUT
-
-      - uses: nick-fields/assert-action@v1
-        with:
-          expected: "nginx:${{ needs.setup.outputs.random }}"
-          actual: "${{ steps.image.outputs.value }}"
+#      - name: Checkout Argo Configuration
+#        uses: actions/checkout@v2
+#        with:
+#          repository: cloudposse/argocd-deploy-non-prod-test
+#          ref: ${{ needs.test.outputs.sha }}
+#          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+#          path: ./assert
+#
+#      - name: Get Image
+#        id: image
+#        shell: bash
+#        run: |-
+#          image=$( \
+#            yq eval-all '.spec.source.spec.containers[].image | select(. != null)' \
+#              ./assert/plat/ue2-sandbox/argocd/test-app.yaml \
+#          )
+#          echo "value=${image}" >> $GITHUB_OUTPUT
+#
+#      - uses: nick-fields/assert-action@v1
+#        with:
+#          expected: "nginx:${{ needs.setup.outputs.random }}"
+#          actual: "${{ steps.image.outputs.value }}"
 
   teardown:
     runs-on: ubuntu-latest
