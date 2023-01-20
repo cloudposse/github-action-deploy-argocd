@@ -19,6 +19,9 @@ inputs:
     description: Toolchain ('helm', 'helmfile', 'helm-raw')
     required: false
     default: helmfile
+  ssm-path:
+    required: true
+    description: SSM path to read environment secrets
   operation:
     description: Operation with helmfiles. (valid options - `deploy`, `destroy`)
     required: true
@@ -99,7 +102,7 @@ runs:
     - name: AWS Get caller identity
       uses: docker://segment/chamber:2.11.0
       with:
-        args: --verbose export platform/default/${{ inputs.environment }} --format yaml --output-file ./platform.yaml
+        args: --verbose export ${{ inputs.ssm-path }}/${{ inputs.environment }} --format yaml --output-file ./platform.yaml
 
     - name: YQ Platform settings
       shell: bash
