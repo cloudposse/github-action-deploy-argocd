@@ -183,7 +183,39 @@ runs:
       with:
         path: ${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}
         file: ${{ inputs.application }}.yaml
-        content: ${{ steps.helm.outputs.template }}
+        content: |-
+          apiVersion: argoproj.io/v1alpha1
+          kind: Application
+          metadata:
+            name: ${{ inputs.application }}
+            namespace: argocd
+            finalizers:
+              - resources-finalizer.argocd.argoproj.io
+          spec:
+            destination:
+              namespace: ${{ inputs.namespace }}
+              server: 'https://kubernetes.default.svc'
+            project: default
+            source:
+              path: ${{ inputs.path }}
+              repoURL: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
+              targetRevision: ${{ inputs.gitref-sha }}
+              helm:
+                version: v3
+                values: |
+                    {{- toYaml .Values.values | nindent 8 }}
+          parameters:
+            - name: image.repository
+              value: ${{ inputs.image }}
+            - name: image.tag
+              value: ${{ inputs.image-tag }}
+          syncPolicy:
+            automated:
+              prune: true
+              selfHeal: true
+            syncOptions:
+              - CreateNamespace=true          
+          
 
     - name: Get Webapp
       id: result
