@@ -182,8 +182,8 @@ runs:
       shell: bash
       run: |
         mkdir -p  ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}
-        cat >./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml <<EOL
-          ${{ steps.helm.outputs.template }}
+        cat << EOL >./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
+        ${{ steps.helm.outputs.template }}
         EOL        
 
         cat ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
