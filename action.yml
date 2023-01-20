@@ -194,6 +194,21 @@ runs:
             ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests/resources.yaml \
         )
         echo "webapp_url=${WEBAPP_URL}" >> $GITHUB_OUTPUT
+          
+
+    - name: Config render
+      uses: 1arp/create-a-file-action@0.2
+      with:
+        path: ${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}
+        file: config.yaml
+        content: |-
+          deployment_id: 1
+          app_repository: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
+          app_commit: ${{ inputs.gitref-sha }}
+          app_hostname: ${{ steps.result.output.webapp_url }}
+          name: ${{ steps.destination.outputs.name }}
+          namespace: ${{ inputs.namespace }}
+          manifests: ${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests
 
     - name: Push to Github
       uses: nick-fields/retry@v2
