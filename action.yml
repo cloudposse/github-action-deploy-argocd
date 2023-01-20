@@ -144,7 +144,7 @@ runs:
       uses: cloudposse/github-action-yaml-config-query@main
       with:
         config: |-
-          template: |- 
+          template: |
             apiVersion: argoproj.io/v1alpha1
             kind: Application
             metadata:
