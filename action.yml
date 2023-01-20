@@ -180,18 +180,17 @@ runs:
     - name: Helm ref render
       if: ${{ inputs.toolchain == 'helm' }}
       shell: bash
-      run: |
-        mkdir -p  ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}
-        cat << EOL >./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
-        ${{ steps.helm.outputs.template }}
-        EOL        
-
-        cat ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
+      uses: 1arp/create-a-file-action@0.2
+      with:
+        path: ${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}
+        file: ${{ inputs.application }}.yaml
+        content: ${{ steps.helm.outputs.template }}
 
     - name: Get Webapp
       id: result
       shell: bash
       run: |-
+        cat ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml        
         WEBAPP_URL=$( \
           yq eval-all '.metadata.annotations["outputs.platform.cloudposse.com/webapp-url"] | select(. != null)' \
             ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml \
