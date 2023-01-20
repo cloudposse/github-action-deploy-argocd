@@ -182,8 +182,10 @@ runs:
       shell: bash
       run: |
         mkdir -p  ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}
-        echo "${{ steps.helm.outputs.template }}" \
-          > ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
+        cat >./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml <<EOL
+          ${{ steps.helm.outputs.template }}
+        EOL        
+
         cat ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.application }}.yaml
 
     - name: Get Webapp
