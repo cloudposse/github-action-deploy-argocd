@@ -112,7 +112,7 @@ jobs:
         run: |-
           image=$( \
             yq eval-all '.spec.template.spec.containers[].image | select(. != null)' \
-              ./assert/plat/ue2-sandbox/argocd/test-app.yaml \
+              ./assert/plat/ue2-sandbox/apps/staging/test-app/manifests/resources.yaml \
           )
           echo "value=${image}" >> $GITHUB_OUTPUT
 
