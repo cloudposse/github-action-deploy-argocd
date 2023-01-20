@@ -67,6 +67,7 @@ jobs:
           namespace: staging
           path: ./test/helmfile/helmfile.yaml
           application: test-app
+          ssm-path: /platform/default
           github-pat: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           image: nginx
           image-tag: ${{ needs.setup.outputs.random }}
