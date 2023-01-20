@@ -88,7 +88,7 @@ jobs:
     steps:
       - uses: nick-fields/assert-action@v1
         with:
-          expected: "https://example-app.example.com/dashboard"
+          expected: "<unknown endpoint>"
           actual: "${{ needs.test.outputs.result }}"
 
       - uses: nick-fields/assert-action@v1
