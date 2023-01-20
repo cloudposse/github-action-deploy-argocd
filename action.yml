@@ -138,46 +138,7 @@ runs:
         IMAGE_NAME: ${{ inputs.image }}
         IMAGE_TAG: ${{ inputs.image-tag }}
 
-    - name: Helm ref template
-      id: helm
-      if: ${{ inputs.toolchain == 'helm' }}
-      uses: cloudposse/github-action-yaml-config-query@main
-      with:
-        config: |
-          template: |
-            apiVersion: argoproj.io/v1alpha1
-            kind: Application
-            metadata:
-              name: ${{ inputs.application }}
-              namespace: argocd
-              finalizers:
-                - resources-finalizer.argocd.argoproj.io
-            spec:
-              destination:
-                  namespace: ${{ inputs.namespace }}
-                  server: 'https://kubernetes.default.svc'
-              project: default
-              source:
-                  path: ${{ inputs.path }}
-                  repoURL: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
-                  targetRevision: ${{ inputs.gitref-sha }}
-                  helm:
-                    version: v3
-                    values: |
-                        {{- toYaml .Values.values | nindent 8 }}
-            parameters:
-                - name: image.repository
-                  value: ${{ inputs.image }}
-                - name: image.tag
-                  value: ${{ inputs.image-tag }}
-            syncPolicy:
-              automated:
-                prune: true
-                selfHeal: true
-              syncOptions:
-                - CreateNamespace=true          
-
-    - name: Helm ref render
+    - name: Helm render
       if: ${{ inputs.toolchain == 'helm' }}
       uses: 1arp/create-a-file-action@0.2
       with:
@@ -215,7 +176,6 @@ runs:
               selfHeal: true
             syncOptions:
               - CreateNamespace=true          
-          
 
     - name: Get Webapp
       id: result
