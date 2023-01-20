@@ -203,10 +203,10 @@ runs:
         file: config.yaml
         content: |-
           deployment_id: 1
-          app_repository: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
+          app_repository: ${{ inputs.application }}
           app_commit: ${{ inputs.gitref-sha }}
           app_hostname: ${{ steps.result.outputs.webapp_url }}
-          name: ${{ steps.destination.outputs.name }}
+          name: ${{ inputs.application }}
           namespace: ${{ inputs.namespace }}
           manifests: ${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests
 
