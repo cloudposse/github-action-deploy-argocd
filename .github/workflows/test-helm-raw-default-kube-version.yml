@@ -134,7 +134,7 @@ jobs:
 
       - uses: nick-fields/assert-action@v1
         with:
-          expected: "networking.k8s.io/v1beta1"
+          expected: "networking.k8s.io/v1"
           actual: "${{ steps.ingress.outputs.value }}"
 
   teardown:
