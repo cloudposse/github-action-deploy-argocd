@@ -248,11 +248,19 @@ runs:
           
           git config --global user.email "bot@example.com"
           git config --global user.name "cloudpossebot"
-          git config --global pull.rebase true
-          # git config --global pull.ff only
           
           cd ./${{ steps.destination_dir.outputs.name }}
-          git pull
+          git add -A
+          git status
+          git diff-index --quiet HEAD || git commit -m "GitHub Actions Autocommitter"
+          git push origin ${{ steps.destination.outputs.ref }}
+          
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+        new_command_on_retry: |-
+          set -e
+          
+          cd ./${{ steps.destination_dir.outputs.name }}
+          git pull --rebase
           git add -A
           git status
           git diff-index --quiet HEAD || git commit -m "GitHub Actions Autocommitter"
