@@ -1,0 +1,148 @@
+name: Test - Helmfile raw - default kubernetes version
+on:
+#  # Uncomment when test added first time to register workflow and comment it back after workflow would be registered
+#  #
+#  # Added pull_request to register workflow from the PR.
+#  # Read more https://stackoverflow.com/questions/63362126/github-actions-how-to-run-a-workflow-created-on-a-non-master-branch-from-the-wo
+  pull_request: {}
+  workflow_dispatch: {}
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup
+        run: echo "Do setup"
+
+      - id: random
+        shell: bash
+        run: |-
+          echo "password=$(echo $RANDOM | md5sum | head -c 20)" >> $GITHUB_OUTPUT
+
+    outputs:
+      random: ${{ steps.random.outputs.password }}
+
+
+  test:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    needs: [setup]
+    services:
+      localstack:
+        image: localstack/localstack:1.3.1
+        ports:
+          - 4566:4566
+          - 4510-4559:4510-4559
+        credentials:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - run: |
+          aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} ssm put-parameter \
+            --name "/platform/default/staging/default_ingress_domain" \
+            --type "SecureString" \
+            --value "example.com"
+          
+          aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} ssm put-parameter \
+            --name "/platform/default/staging/default_alb_ingress_group" \
+            --type "SecureString" \
+            --value "default" \
+            --debug
+
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: us-east-1
+          ## Use localhost to connect localstack because the commands runs not in a container
+          AWS_ENDPOINT_OVERRIDE: http://localhost:4566
+
+      - uses: ./
+        id: current
+        with:
+          cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
+          toolchain: helmfile
+          environment: staging
+          namespace: staging
+          path: ./test/helmfile/helmfile.yaml
+          application: test-app
+          ssm-path: platform/default
+          github-pat: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          image: nginx
+          image-tag: ${{ needs.setup.outputs.random }}
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: us-east-1
+          ## Use localhost to connect localstack because the commands runs not in a container
+          AWS_ENDPOINT_OVERRIDE: http://localhost:4566
+          ## Use localstack to connect localstack because the chamber runs in a container
+          CHAMBER_AWS_SSM_ENDPOINT: http://localstack:4566/
+
+    outputs:
+      result: ${{ steps.current.outputs.webapp-url }}
+      sha: ${{ steps.current.outputs.sha }}
+
+  assert:
+    runs-on: ubuntu-latest
+    needs: [setup, test]
+    steps:
+      - uses: nick-fields/assert-action@v1
+        with:
+          expected: "https://example-app.example.com/dashboard"
+          actual: "${{ needs.test.outputs.result }}"
+
+      - uses: nick-fields/assert-action@v1
+        with:
+          expected: ""
+          actual: "${{ needs.test.outputs.sha }}"
+          comparison: notEqual
+
+      - name: Checkout Argo Configuration
+        uses: actions/checkout@v3
+        with:
+          repository: cloudposse/argocd-deploy-non-prod-test
+          ref: ${{ needs.test.outputs.sha }}
+          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          path: ./assert
+
+      - name: Get Image
+        id: image
+        shell: bash
+        run: |-
+          image=$( \
+            yq eval-all '.spec.template.spec.containers[].image | select(. != null)' \
+              ./assert/plat/ue2-sandbox/apps/staging/test-app/manifests/resources.yaml \
+          )
+          echo "value=${image}" >> $GITHUB_OUTPUT
+
+      - uses: nick-fields/assert-action@v1
+        with:
+          expected: "nginx:${{ needs.setup.outputs.random }}"
+          actual: "${{ steps.image.outputs.value }}"
+
+      - name: Get Ingress
+        id: ingress
+        shell: bash
+        run: |-
+          ingress=$( \
+            yq eval-all 'select(.kind == "Ingress") | .apiVersion' \
+              ./assert/plat/ue2-sandbox/apps/staging/test-app/manifests/resources.yaml \
+          )
+          echo "value=${ingress}" >> $GITHUB_OUTPUT
+
+      - uses: nick-fields/assert-action@v1
+        with:
+          expected: "networking.k8s.io/v1"
+          actual: "${{ steps.ingress.outputs.value }}"
+
+
+  teardown:
+    runs-on: ubuntu-latest
+    needs: [assert]
+    if: ${{ always() }}
+    steps:
+      - name: Tear down
+        run: echo "Do Tear down"
