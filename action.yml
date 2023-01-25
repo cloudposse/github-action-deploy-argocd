@@ -271,7 +271,7 @@ runs:
           git status
           git diff-index --quiet HEAD || git commit -m "GitHub Actions Autocommitter"
           git push origin ${{ steps.destination.outputs.ref }}
+
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           
           popd
-          
-          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
