@@ -135,8 +135,9 @@ runs:
           --environment ${{ inputs.environment }} \
           --file ${{ inputs.path}} \
           --state-values-file $(pwd)/platform.yaml \
+          --debug \
           template \
-          --args="--kube-version ${{ steps.metadata.outputs.kube_version }}" \
+          --args="--kube-version=${{ steps.metadata.outputs.kube_version }}" \
           > ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests/resources.yaml
       env:
         IMAGE_NAME: ${{ inputs.image }}
