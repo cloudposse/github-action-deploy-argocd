@@ -244,6 +244,8 @@ runs:
         max_attempts: 4
         shell: bash
         command: |-
+          set -e
+          
           git config --global user.email "bot@example.com"
           git config --global user.name "cloudpossebot"
           git config --global pull.rebase false
@@ -254,7 +256,6 @@ runs:
           git add -A
           git status
           git diff-index --quiet HEAD || git commit -m "GitHub Actions Autocommitter"
+          git push origin ${{ steps.destination.outputs.ref }}
           
           echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-          
-          git push origin ${{ steps.destination.outputs.ref }}
