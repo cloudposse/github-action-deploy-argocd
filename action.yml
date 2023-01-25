@@ -119,7 +119,7 @@ runs:
       id: metadata
       run: |
         for output in $(yq --exit-status --no-colors eval-all '. | to_entries | map( .key + "=" + .value ) | join("\n")' ./_metadata.yaml); do
-          echo "${output}" >> $GITHUB_OUTPUTS ;
+          echo "${output}" >> $GITHUB_OUTPUT ;
         done
 
     - name: Ensure argocd repo structure
