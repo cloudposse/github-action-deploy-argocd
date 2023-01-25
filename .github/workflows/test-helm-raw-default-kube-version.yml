@@ -50,12 +50,6 @@ jobs:
             --type "SecureString" \
             --value "default" \
             --debug
-          
-          aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} ssm put-parameter \
-            --name "/platform/default/_metadata/kube_version" \
-            --type "SecureString" \
-            --value "1.15" \
-            --debug
 
         env:
           AWS_ACCESS_KEY_ID: test
