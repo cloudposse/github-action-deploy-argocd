@@ -55,7 +55,7 @@ jobs:
           aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} ssm put-parameter \
             --name "/platform/default/_metadata/kube_version" \
             --type "SecureString" \
-            --value "1.23" \
+            --value "1.15" \
             --debug
 
         env:
