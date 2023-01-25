@@ -153,6 +153,7 @@ runs:
           --namespace ${{ inputs.namespace }} \
           --set ingress.default.hosts.example=test \
           --values $(pwd)/platform.yaml \
+          --kube-version=${{ steps.metadata.outputs.kube_version }} \
         > ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests/resources.yaml
       env:
         IMAGE_NAME: ${{ inputs.image }}
