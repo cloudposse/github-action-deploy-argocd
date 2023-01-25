@@ -118,8 +118,9 @@ runs:
       shell: bash
       id: metadata
       run: |
-        yq --exit-status --no-colors eval-all '. | to_entries | map( .key + "=" + .value ) | join("\n")' ./_metadata.yaml | \
-          xargs -I {} echo "{}" >> $GITHUB_OUTPUTS ;
+        for output in $(yq --exit-status --no-colors eval-all '. | to_entries | map( .key + "=" + .value ) | join("\n")' ./_metadata.yaml); do
+          echo "${output}" >> $GITHUB_OUTPUTS ;
+        done
 
     - name: Ensure argocd repo structure
       shell: bash
