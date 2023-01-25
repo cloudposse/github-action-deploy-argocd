@@ -263,7 +263,7 @@ runs:
           
           popd
           
-          cp ./tmp/* ./${{ steps.destination_dir.outputs.name }}/ 
+          cp -r ./tmp/* ./${{ steps.destination_dir.outputs.name }}/ 
           
           pushd ./${{ steps.destination_dir.outputs.name }}
           
