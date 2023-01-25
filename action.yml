@@ -67,7 +67,7 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: 'Setup yq'
+    - name: Setup yq
       uses: dcarbone/install-yq-action@v1.0.1
       with:
         version: v4.28.1
@@ -133,10 +133,18 @@ runs:
           false:
             kube_version: --kube-version=${{ steps.metadata.outputs.kube_version }}      
 
+    - name: Config
+      id: config
+      uses: cloudposse/github-action-yaml-config-query@0.1.2
+      with:
+        config: |-
+          tmp: ./tmp/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}
+          path: ${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}
+
     - name: Ensure argocd repo structure
       shell: bash
       run: |
-        mkdir -p  ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests        
+        mkdir -p ${{ steps.config.outputs.tmp }}/manifests
 
     - name: Helmfile render
       if: ${{ inputs.toolchain == 'helmfile' }}
@@ -148,7 +156,7 @@ runs:
           --state-values-file $(pwd)/platform.yaml \
           template \
           --args="${{ steps.arguments.outputs.kube_version }}" \
-          > ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests/resources.yaml
+          > ${{ steps.config.outputs.tmp }}/manifests/resources.yaml
       env:
         IMAGE_NAME: ${{ inputs.image }}
         IMAGE_TAG: ${{ inputs.image-tag }}
@@ -165,7 +173,7 @@ runs:
           --set ingress.default.hosts.example=test \
           --values $(pwd)/platform.yaml \
           ${{ steps.arguments.outputs.kube_version }} \
-        > ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests/resources.yaml
+        > ${{ steps.config.outputs.tmp }}/manifests/resources.yaml
       env:
         IMAGE_NAME: ${{ inputs.image }}
         IMAGE_TAG: ${{ inputs.image-tag }}
@@ -174,7 +182,7 @@ runs:
       if: ${{ inputs.toolchain == 'helm' }}
       uses: 1arp/create-a-file-action@0.2
       with:
-        path: ${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests
+        path: ${{ steps.config.outputs.tmp }}/manifests
         file: resources.yaml
         content: |-
           apiVersion: argoproj.io/v1alpha1
@@ -217,15 +225,14 @@ runs:
       run: |-
         WEBAPP_URL=$( \
           yq eval-all '.metadata.annotations["outputs.platform.cloudposse.com/webapp-url"] | select(. != null)' \
-            ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests/resources.yaml \
+            ${{ steps.config.outputs.tmp }}/manifests/resources.yaml \
         )
         echo "webapp_url=${WEBAPP_URL}" >> $GITHUB_OUTPUT
-          
 
     - name: Config render
       uses: 1arp/create-a-file-action@0.2
       with:
-        path: ${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}
+        path: ${{ steps.config.outputs.tmp }}
         file: config.yaml
         content: |-
           deployment_id: 1
@@ -234,7 +241,7 @@ runs:
           app_hostname: ${{ steps.result.outputs.webapp_url }}
           name: ${{ inputs.application }}
           namespace: ${{ inputs.namespace }}
-          manifests: ${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests
+          manifests: ${{ steps.config.outputs.path }}/manifests
 
     - name: Push to Github
       uses: nick-fields/retry@v2
@@ -248,22 +255,23 @@ runs:
           
           git config --global user.email "bot@example.com"
           git config --global user.name "cloudpossebot"
+
+          pushd /${{ steps.destination_dir.outputs.name }}
           
-          cd ./${{ steps.destination_dir.outputs.name }}
-          git add -A
-          git status
-          git diff-index --quiet HEAD || git commit -m "GitHub Actions Autocommitter"
-          git push origin ${{ steps.destination.outputs.ref }}
-          
-          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-        new_command_on_retry: |-
-          set -e
-          
-          cd ./${{ steps.destination_dir.outputs.name }}
+          git reset --hard origin/${{ steps.destination.outputs.ref }}
           git pull --rebase
+          
+          popd
+          
+          cp ./tmp/* ./${{ steps.destination_dir.outputs.name }}/ 
+          
+          pushd /${{ steps.destination_dir.outputs.name }}
+          
           git add -A
           git status
           git diff-index --quiet HEAD || git commit -m "GitHub Actions Autocommitter"
           git push origin ${{ steps.destination.outputs.ref }}
+          
+          popd
           
           echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
