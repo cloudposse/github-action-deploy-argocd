@@ -109,17 +109,17 @@ runs:
       run: |
         yq --exit-status --no-colors --inplace eval '{"platform": .}' ./platform.yaml
 
-#    - name: Read platform metadata
-#      uses: docker://segment/chamber:2.11.0
-#      with:
-#        args: --verbose export ${{ inputs.ssm-path }}/_metadata --format yaml --output-file ./_metadata.yaml
-#
-#    - name: YQ Platform settings
-#      shell: bash
-#      id: metadata
-#      run: |
-#        yq --exit-status --no-colors eval-all '. | to_entries | map( .key + "=" + .value ) | join("\n")' ./_metadata.yaml | \
-#          xargs -I {} echo "{}" >> $GITHUB_OUTPUTS ;
+    - name: Read platform metadata
+      uses: docker://segment/chamber:2.11.0
+      with:
+        args: --verbose export ${{ inputs.ssm-path }}/_metadata --format yaml --output-file ./_metadata.yaml
+
+    - name: YQ Platform settings
+      shell: bash
+      id: metadata
+      run: |
+        yq --exit-status --no-colors eval-all '. | to_entries | map( .key + "=" + .value ) | join("\n")' ./_metadata.yaml | \
+          xargs -I {} echo "{}" >> $GITHUB_OUTPUTS ;
 
     - name: Ensure argocd repo structure
       shell: bash
@@ -134,6 +134,7 @@ runs:
           --environment ${{ inputs.environment }} \
           --file ${{ inputs.path}} \
           --state-values-file $(pwd)/platform.yaml \
+          --args="--kube-version ${{ steps.metadata.outputs.kube_version }}" \
           template \
           > ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests/resources.yaml
       env:
