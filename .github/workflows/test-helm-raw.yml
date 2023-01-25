@@ -73,7 +73,7 @@ jobs:
           toolchain: helm-raw
           environment: staging
           namespace: staging
-          path: ./test/helm/example-app
+          path: ./action/test/helm/example-app
           application: test-app
           ssm-path: platform/default
           github-pat: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}

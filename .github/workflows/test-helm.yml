@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: ./action
-          
+
       - run: |
           aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} ssm put-parameter \
             --name "/platform/default/staging/default_ingress_domain" \
@@ -66,7 +66,7 @@ jobs:
           toolchain: helm
           environment: staging
           namespace: staging
-          path: ./test/helm/example-app
+          path: ./action/test/helm/example-app
           application: test-app
           ssm-path: platform/default
           github-pat: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}

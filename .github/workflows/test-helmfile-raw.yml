@@ -74,7 +74,7 @@ jobs:
           toolchain: helmfile
           environment: staging
           namespace: staging
-          path: ./test/helmfile/helmfile.yaml
+          path: ./action/test/helmfile/helmfile.yaml
           application: test-app
           ssm-path: platform/default
           github-pat: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
