@@ -121,6 +121,17 @@ runs:
         for output in $(yq --exit-status --no-colors eval-all '. | to_entries | map( .key + "=" + .value ) | join("\n")' ./_metadata.yaml); do
           echo "${output}" >> $GITHUB_OUTPUT ;
         done
+        
+    - name: Context
+      id: arguments
+      uses: cloudposse/github-action-yaml-config-query@0.1.2
+      with:
+        query: .${{ steps.metadata.outputs.kube_version == '' }}
+        config: |-
+          true: 
+            kube_version: ""
+          false:
+            kube_version: --kube-version=${{ steps.metadata.outputs.kube_version }}      
 
     - name: Ensure argocd repo structure
       shell: bash
@@ -136,7 +147,7 @@ runs:
           --file ${{ inputs.path}} \
           --state-values-file $(pwd)/platform.yaml \
           template \
-          --args="--kube-version=${{ steps.metadata.outputs.kube_version }}" \
+          --args="${{ steps.arguments.outputs.kube_version }}" \
           > ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests/resources.yaml
       env:
         IMAGE_NAME: ${{ inputs.image }}
@@ -153,7 +164,7 @@ runs:
           --namespace ${{ inputs.namespace }} \
           --set ingress.default.hosts.example=test \
           --values $(pwd)/platform.yaml \
-          --kube-version=${{ steps.metadata.outputs.kube_version }} \
+          ${{ steps.arguments.outputs.kube_version }} \
         > ./${{ steps.destination_dir.outputs.name }}/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}/manifests/resources.yaml
       env:
         IMAGE_NAME: ${{ inputs.image }}
