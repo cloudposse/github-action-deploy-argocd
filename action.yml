@@ -99,7 +99,7 @@ runs:
         token: ${{ inputs.github-pat }}
         path: ${{ steps.destination_dir.outputs.name }}
 
-    - name: AWS Get caller identity
+    - name: Read platform context
       uses: docker://segment/chamber:2.11.0
       with:
         args: --verbose export ${{ inputs.ssm-path }}/${{ inputs.environment }} --format yaml --output-file ./platform.yaml
@@ -108,6 +108,18 @@ runs:
       shell: bash
       run: |
         yq --exit-status --no-colors --inplace eval '{"platform": .}' ./platform.yaml
+
+#    - name: Read platform metadata
+#      uses: docker://segment/chamber:2.11.0
+#      with:
+#        args: --verbose export ${{ inputs.ssm-path }}/_metadata --format yaml --output-file ./_metadata.yaml
+#
+#    - name: YQ Platform settings
+#      shell: bash
+#      id: metadata
+#      run: |
+#        yq --exit-status --no-colors eval-all '. | to_entries | map( .key + "=" + .value ) | join("\n")' ./_metadata.yaml | \
+#          xargs -I {} echo "{}" >> $GITHUB_OUTPUTS ;
 
     - name: Ensure argocd repo structure
       shell: bash
