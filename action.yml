@@ -249,7 +249,7 @@ runs:
           git config --global user.email "bot@example.com"
           git config --global user.name "cloudpossebot"
           git config --global pull.rebase true
-          git config --global pull.ff only
+          # git config --global pull.ff only
           
           cd ./${{ steps.destination_dir.outputs.name }}
           git pull
