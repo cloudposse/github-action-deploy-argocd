@@ -51,6 +51,13 @@ jobs:
             --type "SecureString" \
             --value "default" \
             --debug
+
+          aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} ssm put-parameter \
+            --name "/platform/default/_metadata/kube_version" \
+            --type "SecureString" \
+            --value "1.23" \
+            --debug
+
         env:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
@@ -121,6 +128,22 @@ jobs:
         with:
           expected: "nginx:${{ needs.setup.outputs.random }}"
           actual: "${{ steps.image.outputs.value }}"
+
+      - name: Get Ingress
+        id: ingress
+        shell: bash
+        run: |-
+          ingress=$( \
+            yq eval-all 'select(.kind == "Ingress") | .apiVersion' \
+              ./assert/plat/ue2-sandbox/apps/staging/test-app/manifests/resources.yaml \
+          )
+          echo "value=${ingress}" >> $GITHUB_OUTPUT
+
+      - uses: nick-fields/assert-action@v1
+        with:
+          expected: "networking.k8s.io/v1beta1"
+          actual: "${{ steps.ingress.outputs.value }}"
+
 
   teardown:
     runs-on: ubuntu-latest
