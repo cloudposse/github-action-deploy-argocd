@@ -256,7 +256,7 @@ runs:
           git config --global user.email "bot@example.com"
           git config --global user.name "cloudpossebot"
 
-          pushd /${{ steps.destination_dir.outputs.name }}
+          pushd ./${{ steps.destination_dir.outputs.name }}
           
           git reset --hard origin/${{ steps.destination.outputs.ref }}
           git pull --rebase
@@ -265,7 +265,7 @@ runs:
           
           cp ./tmp/* ./${{ steps.destination_dir.outputs.name }}/ 
           
-          pushd /${{ steps.destination_dir.outputs.name }}
+          pushd ./${{ steps.destination_dir.outputs.name }}
           
           git add -A
           git status
