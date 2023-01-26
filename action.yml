@@ -239,7 +239,7 @@ runs:
           app_repository: ${{ inputs.application }}
           app_commit: ${{ inputs.gitref-sha }}
           app_hostname: ${{ steps.result.outputs.webapp_url }}
-          name: ${{ inputs.application }}
+          name: ${{ inputs.namespace }}.${{ inputs.application }}
           namespace: ${{ inputs.namespace }}
           manifests: ${{ steps.config.outputs.path }}/manifests
 
