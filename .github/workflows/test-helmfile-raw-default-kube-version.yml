@@ -1,4 +1,4 @@
-name: Test - Helm raw
+name: Test - Helmfile raw - default kubernetes version
 on:
 #  # Uncomment when test added first time to register workflow and comment it back after workflow would be registered
 #  #
@@ -21,6 +21,7 @@ jobs:
 
     outputs:
       random: ${{ steps.random.outputs.password }}
+
 
   test:
     runs-on: ubuntu-latest
@@ -52,12 +53,6 @@ jobs:
             --type "SecureString" \
             --value "default" \
             --debug
-          
-          aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} ssm put-parameter \
-            --name "/platform/default/_metadata/kube_version" \
-            --type "SecureString" \
-            --value "1.15" \
-            --debug
 
         env:
           AWS_ACCESS_KEY_ID: test
@@ -70,10 +65,10 @@ jobs:
         id: current
         with:
           cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
-          toolchain: helm-raw
+          toolchain: helmfile
           environment: staging
           namespace: staging
-          path: ./action/test/helm/example-app
+          path: ./action/test/helmfile/helmfile.yaml
           application: test-app
           ssm-path: platform/default
           github-pat: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
@@ -142,8 +137,9 @@ jobs:
 
       - uses: nick-fields/assert-action@v1
         with:
-          expected: "networking.k8s.io/v1beta1"
+          expected: "networking.k8s.io/v1"
           actual: "${{ steps.ingress.outputs.value }}"
+
 
   teardown:
     runs-on: ubuntu-latest

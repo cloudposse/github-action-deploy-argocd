@@ -1,4 +1,4 @@
-name: Test - Helm raw
+name: Test - Helm raw - default kubernetes version
 on:
 #  # Uncomment when test added first time to register workflow and comment it back after workflow would be registered
 #  #
@@ -51,12 +51,6 @@ jobs:
             --name "/platform/default/staging/default_alb_ingress_group" \
             --type "SecureString" \
             --value "default" \
-            --debug
-          
-          aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} ssm put-parameter \
-            --name "/platform/default/_metadata/kube_version" \
-            --type "SecureString" \
-            --value "1.15" \
             --debug
 
         env:
@@ -142,7 +136,7 @@ jobs:
 
       - uses: nick-fields/assert-action@v1
         with:
-          expected: "networking.k8s.io/v1beta1"
+          expected: "networking.k8s.io/v1"
           actual: "${{ steps.ingress.outputs.value }}"
 
   teardown:
