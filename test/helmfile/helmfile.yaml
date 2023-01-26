@@ -10,8 +10,6 @@ repositories:
 - name: "cloudposse-incubator"
   url: "https://charts.cloudposse.com/incubator/"
 
-- name: "cloudposse-incubator-test"
-  url: "https://charts.dev.cloudposse.com/refs/pull/271/merge/incubator"
 
 
 releases:
@@ -22,7 +20,7 @@ releases:
 - name: 'example-app'
   labels:
     preview: "true"
-  chart: "cloudposse-incubator-test/monochart"
+  chart: "cloudposse-incubator/monochart"
   version: "0.26.0"
   wait: true
   force: true
