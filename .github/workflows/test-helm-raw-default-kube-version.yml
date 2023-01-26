@@ -64,7 +64,7 @@ jobs:
         id: current
         with:
           cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
-          toolchain: helm-raw
+          toolchain: helm
           environment: staging
           namespace: staging
           path: ./action/test/helm/example-app

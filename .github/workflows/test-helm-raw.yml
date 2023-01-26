@@ -70,7 +70,7 @@ jobs:
         id: current
         with:
           cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
-          toolchain: helm-raw
+          toolchain: helm
           environment: staging
           namespace: staging
           path: ./action/test/helm/example-app
@@ -144,6 +144,21 @@ jobs:
         with:
           expected: "networking.k8s.io/v1beta1"
           actual: "${{ steps.ingress.outputs.value }}"
+
+      - name: Get Name
+        id: name
+        shell: bash
+        run: |-
+          name=$( \
+            yq eval-all '.name' \
+              ./assert/plat/ue2-sandbox/apps/staging/test-app/config.yaml \
+          )
+          echo "value=${name}" >> $GITHUB_OUTPUT
+
+      - uses: nick-fields/assert-action@v1
+        with:
+          expected: "staging.test-app"
+          actual: "${{ steps.name.outputs.value }}"
 
   teardown:
     runs-on: ubuntu-latest
