@@ -16,7 +16,7 @@ inputs:
     description: The path where lives the helmfile or helm chart.
     required: true
   toolchain:
-    description: Toolchain ('helm', 'helmfile', 'helm-raw')
+    description: Toolchain ('helm', 'helmfile')
     required: false
     default: helmfile
   ssm-path:
@@ -162,7 +162,7 @@ runs:
         IMAGE_TAG: ${{ inputs.image-tag }}
 
     - name: Helm raw render
-      if: ${{ inputs.toolchain == 'helm-raw' }}
+      if: ${{ inputs.toolchain == 'helm' }}
       shell: bash
       run: |
         helm template ${{ inputs.application }} ${{ inputs.path }} \
@@ -177,47 +177,6 @@ runs:
       env:
         IMAGE_NAME: ${{ inputs.image }}
         IMAGE_TAG: ${{ inputs.image-tag }}
-
-    - name: Helm render
-      if: ${{ inputs.toolchain == 'helm' }}
-      uses: 1arp/create-a-file-action@0.2
-      with:
-        path: ${{ steps.config.outputs.tmp }}/manifests
-        file: resources.yaml
-        content: |-
-          apiVersion: argoproj.io/v1alpha1
-          kind: Application
-          metadata:
-            name: ${{ inputs.application }}
-            namespace: argocd
-            annotations:
-              outputs.platform.cloudposse.com/webapp-url: "<unknown endpoint>"
-            finalizers:
-              - resources-finalizer.argocd.argoproj.io
-          spec:
-            destination:
-              namespace: ${{ inputs.namespace }}
-              server: 'https://kubernetes.default.svc'
-            project: default
-            source:
-              path: ${{ inputs.path }}
-              repoURL: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
-              targetRevision: ${{ inputs.gitref-sha }}
-              helm:
-                version: v3
-                values: |
-                    {{- toYaml .Values.values | nindent 8 }}
-          parameters:
-            - name: image.repository
-              value: ${{ inputs.image }}
-            - name: image.tag
-              value: ${{ inputs.image-tag }}
-          syncPolicy:
-            automated:
-              prune: true
-              selfHeal: true
-            syncOptions:
-              - CreateNamespace=true          
 
     - name: Get Webapp
       id: result
