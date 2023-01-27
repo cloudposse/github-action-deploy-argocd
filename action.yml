@@ -233,7 +233,7 @@ runs:
           
           popd
           
-          case '${{ inputs.operation' in
+          case '${{ inputs.operation }}' in
         
             deploy)
               cp -r ./tmp/* ./${{ steps.destination_dir.outputs.name }}/ 
