@@ -88,7 +88,6 @@ runs:
         url: ${{ inputs.cluster }}
 
     - id: destination_dir
-      if: ${{ inputs.operation == 'deploy' }}
       shell: bash
       run: |-
         echo "name=$(echo $RANDOM | md5sum | head -c 20)" >> $GITHUB_OUTPUT
@@ -236,7 +235,7 @@ runs:
           case '${{ inputs.operation }}' in
         
             deploy)
-              cp -r ./tmp/* ./${{ steps.destination_dir.outputs.name }}/ 
+              cp -r ./tmp/* ./${{ steps.destination_dir.outputs.name }}/
             ;;
           
             destroy)
