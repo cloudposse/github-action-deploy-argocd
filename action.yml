@@ -76,6 +76,7 @@ runs:
 
     - name: Setup helmfile
       uses: mamezou-tech/setup-helmfile@v1.2.0
+      if: ${{ inputs.operation == 'deploy' }}
       with:
         helmfile-version: v0.148.1
         helm-version: v3.10.2
@@ -91,6 +92,14 @@ runs:
       run: |-
         echo "name=$(echo $RANDOM | md5sum | head -c 20)" >> $GITHUB_OUTPUT
 
+    - name: Config
+      id: config
+      uses: cloudposse/github-action-yaml-config-query@0.1.2
+      with:
+        config: |-
+          tmp: ./tmp/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}
+          path: ${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}
+
     - name: Checkout Argo Configuration
       uses: actions/checkout@v2
       with:
@@ -101,20 +110,24 @@ runs:
 
     - name: Read platform context
       uses: docker://segment/chamber:2.11.0
+      if: ${{ inputs.operation == 'deploy' }}
       with:
         args: --verbose export ${{ inputs.ssm-path }}/${{ inputs.environment }} --format yaml --output-file ./platform.yaml
 
     - name: YQ Platform settings
+      if: ${{ inputs.operation == 'deploy' }}
       shell: bash
       run: |
         yq --exit-status --no-colors --inplace eval '{"platform": .}' ./platform.yaml
 
     - name: Read platform metadata
       uses: docker://segment/chamber:2.11.0
+      if: ${{ inputs.operation == 'deploy' }}
       with:
         args: --verbose export ${{ inputs.ssm-path }}/_metadata --format yaml --output-file ./_metadata.yaml
 
     - name: YQ Platform settings
+      if: ${{ inputs.operation == 'deploy' }}
       shell: bash
       id: metadata
       run: |
@@ -123,6 +136,7 @@ runs:
         done
         
     - name: Context
+      if: ${{ inputs.operation == 'deploy' }}
       id: arguments
       uses: cloudposse/github-action-yaml-config-query@0.1.2
       with:
@@ -133,21 +147,15 @@ runs:
           false:
             kube_version: --kube-version=${{ steps.metadata.outputs.kube_version }}      
 
-    - name: Config
-      id: config
-      uses: cloudposse/github-action-yaml-config-query@0.1.2
-      with:
-        config: |-
-          tmp: ./tmp/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}
-          path: ${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}
 
     - name: Ensure argocd repo structure
+      if: ${{ inputs.operation == 'deploy' }}
       shell: bash
       run: |
         mkdir -p ${{ steps.config.outputs.tmp }}/manifests
 
     - name: Helmfile render
-      if: ${{ inputs.toolchain == 'helmfile' }}
+      if: ${{ inputs.toolchain == 'helmfile' && inputs.operation == 'deploy' }}
       shell: bash
       run: |
         helmfile --namespace ${{ inputs.namespace }} \
@@ -162,7 +170,7 @@ runs:
         IMAGE_TAG: ${{ inputs.image-tag }}
 
     - name: Helm raw render
-      if: ${{ inputs.toolchain == 'helm' }}
+      if: ${{ inputs.toolchain == 'helm' && inputs.operation == 'deploy' }}
       shell: bash
       run: |
         helm template ${{ inputs.application }} ${{ inputs.path }} \
@@ -179,6 +187,7 @@ runs:
         IMAGE_TAG: ${{ inputs.image-tag }}
 
     - name: Get Webapp
+      if: ${{ inputs.operation == 'deploy' }}
       id: result
       shell: bash
       run: |-
@@ -189,6 +198,7 @@ runs:
         echo "webapp_url=${WEBAPP_URL}" >> $GITHUB_OUTPUT
 
     - name: Config render
+      if: ${{ inputs.operation == 'deploy' }}
       uses: 1arp/create-a-file-action@0.2
       with:
         path: ${{ steps.config.outputs.tmp }}
@@ -222,7 +232,21 @@ runs:
           
           popd
           
-          cp -r ./tmp/* ./${{ steps.destination_dir.outputs.name }}/ 
+          case '${{ inputs.operation }}' in
+        
+            deploy)
+              cp -r ./tmp/* ./${{ steps.destination_dir.outputs.name }}/
+            ;;
+          
+            destroy)
+              rm -rf ./${{ steps.destination_dir.outputs.name }}/${{ steps.config.outputs.path }}
+            ;;
+          
+            *)
+              echo "Operation should be `deploy` or `destroy`"
+              exit 1;
+            ;;
+          esac          
           
           pushd ./${{ steps.destination_dir.outputs.name }}
           
