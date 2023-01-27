@@ -146,6 +146,8 @@ jobs:
           comparison: notEqual
 
       - uses: jiangxin/file-exists-action@v1
+        id: resources
+        continue-on-error: true
         with:
           repository: cloudposse/argocd-deploy-non-prod-test
           ref: ${{ needs.test.outputs.sha }}
@@ -155,9 +157,8 @@ jobs:
 
       - uses: nick-fields/assert-action@v1
         with:
-          expected: "nginx:${{ needs.setup.outputs.random }}"
-          actual: "${{ steps.image.outputs.value }}"
-
+          expected: "failure"
+          actual: "${{ steps.resources.outcome }}"
 
   teardown:
     runs-on: ubuntu-latest
