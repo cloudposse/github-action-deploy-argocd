@@ -118,7 +118,10 @@ runs:
       if: ${{ inputs.operation == 'deploy' }}
       shell: bash
       run: |
+        ls -la
+        cat ./platform.yaml
         chmod 777 ./platform.yaml
+        ls -la
         yq --exit-status --no-colors --inplace eval '{"platform": .}' ./platform.yaml
 
     - name: Read platform metadata
