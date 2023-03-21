@@ -97,9 +97,42 @@ jobs:
     runs-on: ubuntu-latest
     needs: [setup]
     steps:
+      - name: Checkout Argo Configuration
+        uses: actions/checkout@v3
+        with:
+          repository: cloudposse/argocd-deploy-non-prod-test
+          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          path: ./status
+
       - name: wait-for-commit
         run: |
           echo "Wait for commit"
+          
+          cd ./status
+          
+          max_iterations=10
+          wait_seconds=10
+          
+          iterations=0
+          while true
+          do
+              ((iterations++))
+              echo "Attempt $iterations"
+              sleep $wait_seconds
+          
+              git log --format=%B -n 1 | grep "GitHub Actions Autocommitter"
+              COMMIT_APPEARS=$?
+              if [ $COMMIT_APPEARS -eq 0 ]; then
+                echo "Commit appers"
+                break
+              fi
+          
+              if [ "$iterations" -ge "$max_iterations" ]; then
+                  echo "Loop Timeout"
+                  exit 1
+              fi
+          done
+
 
   assert:
     runs-on: ubuntu-latest
