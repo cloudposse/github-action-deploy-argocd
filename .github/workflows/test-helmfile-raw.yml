@@ -108,9 +108,12 @@ jobs:
         shell: bash
         run: |
           echo "Wait for commit"
+
+          SEEK_MESSAGE="Deploy cloudposse/github-action-deploy-argocd SHA ${{ github.sha }} RUN ${{ github.run_id }} ATEMPT ${{ github.run_attempt }}"
+          echo ${SEEK_MESSAGE}
           
           cd ./status
-          
+
           max_iterations=50
           wait_seconds=10
           
@@ -120,9 +123,6 @@ jobs:
             iterations=$((iterations+1))
             echo "Attempt $iterations"
             sleep $wait_seconds
-            
-            SEEK_MESSAGE="Deploy cloudposse/github-action-deploy-argocd SHA ${{ github.sha }} RUN ${{ github.run_id }} ATEMPT ${{ github.run_attempt }}"
-            echo ${SEEK_MESSAGE}
             
             set +e
             git pull
