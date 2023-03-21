@@ -252,7 +252,7 @@ runs:
           
           git add -A
           git status
-          git diff-index --quiet HEAD || git commit -m "GitHub Actions Autocommitter"
+          git diff-index --quiet HEAD || git commit -m "Deploy ${{ github.repository }} SHA ${{ github.sha }} RUN ${{ github.run_id }} ATEMPT ${{ github.run_attempt }}"
           git push origin ${{ steps.destination.outputs.ref }}
 
           echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
