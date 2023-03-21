@@ -115,27 +115,27 @@ jobs:
           wait_seconds=10
           
           iterations=0
-          echo "Start waiting"
           while true
           do
-              ((iterations++))
-              echo "Attempt $iterations"
-              sleep $wait_seconds
-              
-              set +e
-              git log --format=%B -n 1 | grep "GitHub Actions Autocommitter"
-              COMMIT_APPEARS=$?
-              set -e
-              
-              if [ $COMMIT_APPEARS -eq 0 ]; then
-                echo "Commit appers"
-                break
-              fi
-          
-              if [ "$iterations" -ge "$max_iterations" ]; then
-                  echo "Loop Timeout"
-                  exit 1
-              fi
+            echo "Attempt $iterations"
+            ((iterations++))
+            echo "Attempt $iterations"
+            sleep $wait_seconds
+            
+            set +e
+            git log --format=%B -n 1 | grep "GitHub Actions Autocommitter"
+            COMMIT_APPEARS=$?
+            set -e
+            
+            if [ $COMMIT_APPEARS -eq 0 ]; then
+              echo "Commit appers"
+              break
+            fi
+        
+            if [ "$iterations" -ge "$max_iterations" ]; then
+                echo "Loop Timeout"
+                exit 1
+            fi
           done
 
 
