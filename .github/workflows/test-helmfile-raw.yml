@@ -155,7 +155,7 @@ jobs:
           sha: ${{ steps.wait.outputs.sha }}
           token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           status: success
-          context: Deployed
+          context: continuous-delivery/staging.test-app
 
   assert:
     runs-on: ubuntu-latest

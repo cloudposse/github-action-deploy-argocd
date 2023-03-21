@@ -269,6 +269,6 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github-pat }}
       with:
         # Context for which we should look for the matching status
-        context: 'Deployed'
+        context: continuous-delivery/${{ inputs.namespace }}.${{ inputs.application }}
         # The commit sha we should look for the status
         sha: ${{ steps.git.outputs.sha }}
