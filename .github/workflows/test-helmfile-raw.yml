@@ -150,6 +150,7 @@ jobs:
         uses: myrotvorets/set-commit-status-action@master
         with:
           repo: cloudposse/argocd-deploy-non-prod-test
+          sha: ${{ steps.wait.outputs.sha }}
           token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           status: success
           context: Deployed
