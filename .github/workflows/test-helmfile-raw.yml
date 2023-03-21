@@ -111,7 +111,7 @@ jobs:
           
           cd ./status
           
-          max_iterations=10
+          max_iterations=50
           wait_seconds=10
           
           iterations=0
