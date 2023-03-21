@@ -59,7 +59,7 @@ inputs:
     required: true
   synchronously:
     description: "Wait until ArgoCD successfully apply the changes"
-    default: 'true'
+    default: 'false'
 outputs:
   webapp-url:
     description: "Web Application url"
