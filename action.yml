@@ -57,6 +57,9 @@ inputs:
   github-pat:
     description: Github PAT to access argocd configuration repository
     required: true
+  synchronously:
+    description: "Wait until ArgoCD successfully apply the changes"
+    default: 'false'
 outputs:
   webapp-url:
     description: "Web Application url"
@@ -252,9 +255,20 @@ runs:
           
           git add -A
           git status
-          git diff-index --quiet HEAD || git commit -m "GitHub Actions Autocommitter"
+          git diff-index --quiet HEAD || git commit -m "Deploy ${{ github.repository }} SHA ${{ github.sha }} RUN ${{ github.run_id }} ATEMPT ${{ github.run_attempt }}"
           git push origin ${{ steps.destination.outputs.ref }}
 
           echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           
           popd
+
+    - uses: rafarlopes/wait-for-commit-status-action@v1
+      if: ${{ inputs.synchronously == 'true' }}
+      env:
+        GITHUB_REPOSITORY: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
+        GITHUB_TOKEN: ${{ inputs.github-pat }}
+      with:
+        # Context for which we should look for the matching status
+        context: continuous-delivery/${{ inputs.namespace }}.${{ inputs.application }}
+        # The commit sha we should look for the status
+        sha: ${{ steps.git.outputs.sha }}

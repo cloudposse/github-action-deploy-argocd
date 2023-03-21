@@ -80,6 +80,7 @@ jobs:
           github-pat: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           image: nginx
           image-tag: ${{ needs.setup.outputs.random }}
+          synchronously: true
         env:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
@@ -90,13 +91,81 @@ jobs:
           CHAMBER_AWS_SSM_ENDPOINT: http://localstack:4566/
 
     outputs:
+      status: ${{ steps.current.outcome }}
       result: ${{ steps.current.outputs.webapp-url }}
       sha: ${{ steps.current.outputs.sha }}
 
+  argocd:
+    runs-on: ubuntu-latest
+    needs: [setup]
+    steps:
+      - name: Checkout Argo Configuration
+        uses: actions/checkout@v3
+        with:
+          repository: cloudposse/argocd-deploy-non-prod-test
+          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          path: ./status
+
+      - name: wait-for-commit
+        id: wait
+        shell: bash
+        run: |
+          echo "Wait for commit"
+
+          SEEK_MESSAGE="Deploy cloudposse/github-action-deploy-argocd SHA ${{ github.sha }} RUN ${{ github.run_id }} ATEMPT ${{ github.run_attempt }}"
+          echo ${SEEK_MESSAGE}
+          
+          cd ./status
+
+          max_iterations=50
+          wait_seconds=10
+          
+          iterations=0
+          while true
+          do
+            iterations=$((iterations+1))
+            echo "Attempt $iterations"
+            sleep $wait_seconds
+            
+            set +e
+            git pull
+            git log --format=%B -n 50 | grep "${SEEK_MESSAGE}"
+            COMMIT_APPEARS=$?
+            set -e
+            
+            if [ $COMMIT_APPEARS -eq 0 ]; then
+              echo "Commit appers"
+              break
+            fi
+        
+            if [ "$iterations" -ge "$max_iterations" ]; then
+                echo "Loop Timeout"
+                exit 1
+            fi
+          done
+          
+          SHA=$(git log --format=oneline -n 50 | grep "${SEEK_MESSAGE}" | cut -d' ' -f1 | head -1)
+          
+          echo "sha=${SHA}" >> $GITHUB_OUTPUT
+
+      - name: set status
+        uses: myrotvorets/set-commit-status-action@master
+        with:
+          repo: cloudposse/argocd-deploy-non-prod-test
+          sha: ${{ steps.wait.outputs.sha }}
+          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          status: success
+          context: continuous-delivery/staging.test-app
+
   assert:
     runs-on: ubuntu-latest
-    needs: [setup, test]
+    needs: [setup, test, argocd]
     steps:
+      - uses: nick-fields/assert-action@v1
+        with:
+          expected: "success"
+          actual: "${{ needs.test.outputs.status }}"
+
       - uses: nick-fields/assert-action@v1
         with:
           expected: "https://example-app.example.com/dashboard"
