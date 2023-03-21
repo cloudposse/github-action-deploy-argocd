@@ -258,3 +258,13 @@ runs:
           echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           
           popd
+
+    - uses: rafarlopes/wait-for-commit-status-action@v1
+      env:
+        GITHUB_REPOSITORY: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
+        GITHUB_TOKEN: ${{ inputs.github-pat }}
+      with:
+        # Context for which we should look for the matching status
+        context: 'Deployed'
+        # The commit sha we should look for the status
+        sha: ${{ steps.git.outputs.sha }}
