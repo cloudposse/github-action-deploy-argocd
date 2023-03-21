@@ -117,8 +117,7 @@ jobs:
           iterations=0
           while true
           do
-            echo "Attempt $iterations"
-            ((iterations++))
+            iterations=$((iterations+1))
             echo "Attempt $iterations"
             sleep $wait_seconds
             
