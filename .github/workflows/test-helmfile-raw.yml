@@ -105,6 +105,7 @@ jobs:
           path: ./status
 
       - name: wait-for-commit
+        shell: bash
         run: |
           echo "Wait for commit"
           
@@ -114,6 +115,7 @@ jobs:
           wait_seconds=10
           
           iterations=0
+          echo "Start waiting"
           while true
           do
               ((iterations++))
