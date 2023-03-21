@@ -125,6 +125,7 @@ jobs:
             echo ${SEEK_MESSAGE}
             
             set +e
+            git pull
             git log --format=%B -n 50 | grep ${SEEK_MESSAGE}
             COMMIT_APPEARS=$?
             set -e
