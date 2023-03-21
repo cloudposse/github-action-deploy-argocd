@@ -122,7 +122,7 @@ jobs:
             sleep $wait_seconds
             
             set +e
-            git log --format=%B -n 1 | grep "Deploy cloudposse/github-action-deploy-argocd SHA ${{ github.sha }} RUN ${{ github.run_id }} ATEMPT ${{ github.run_attempt }}"
+            git log --format=%B -n 50 | grep "Deploy cloudposse/github-action-deploy-argocd SHA ${{ github.sha }} RUN ${{ github.run_id }} ATEMPT ${{ github.run_attempt }}"
             COMMIT_APPEARS=$?
             set -e
             
