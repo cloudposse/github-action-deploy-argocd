@@ -263,7 +263,7 @@ runs:
           popd
 
     - uses: rafarlopes/wait-for-commit-status-action@v1
-      if: ${{ inputs.synchronously }}
+      if: ${{ inputs.synchronously == 'true' }}
       env:
         GITHUB_REPOSITORY: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
         GITHUB_TOKEN: ${{ inputs.github-pat }}
