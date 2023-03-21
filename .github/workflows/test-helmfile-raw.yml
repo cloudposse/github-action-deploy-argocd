@@ -91,6 +91,7 @@ jobs:
           CHAMBER_AWS_SSM_ENDPOINT: http://localstack:4566/
 
     outputs:
+      status: ${{ steps.current.outcome }}
       result: ${{ steps.current.outputs.webapp-url }}
       sha: ${{ steps.current.outputs.sha }}
 
@@ -160,6 +161,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: [setup, test, argocd]
     steps:
+      - uses: nick-fields/assert-action@v1
+        with:
+          expected: "success"
+          actual: "${{ needs.test.outputs.status }}"
+
       - uses: nick-fields/assert-action@v1
         with:
           expected: "https://example-app.example.com/dashboard"
