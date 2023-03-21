@@ -119,9 +119,12 @@ jobs:
               ((iterations++))
               echo "Attempt $iterations"
               sleep $wait_seconds
-          
+              
+              set +e
               git log --format=%B -n 1 | grep "GitHub Actions Autocommitter"
               COMMIT_APPEARS=$?
+              set -e
+              
               if [ $COMMIT_APPEARS -eq 0 ]; then
                 echo "Commit appers"
                 break
