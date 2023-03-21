@@ -57,6 +57,9 @@ inputs:
   github-pat:
     description: Github PAT to access argocd configuration repository
     required: true
+  synchronously:
+    description: "Wait until ArgoCD successfully apply the changes"
+    default: 'false'
 outputs:
   webapp-url:
     description: "Web Application url"
@@ -260,6 +263,7 @@ runs:
           popd
 
     - uses: rafarlopes/wait-for-commit-status-action@v1
+      if: ${{ inputs.synchronously }}
       env:
         GITHUB_REPOSITORY: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
         GITHUB_TOKEN: ${{ inputs.github-pat }}
