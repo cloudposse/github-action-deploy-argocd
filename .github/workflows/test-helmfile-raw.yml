@@ -105,6 +105,7 @@ jobs:
           path: ./status
 
       - name: wait-for-commit
+        id: wait
         shell: bash
         run: |
           echo "Wait for commit"
@@ -140,7 +141,18 @@ jobs:
                 exit 1
             fi
           done
+          
+          SHA=$(git log --format=oneline -n 50 | grep "${SEEK_MESSAGE}" | cut -d' ' -f1 | head -1)
+          
+          echo "sha=${SHA}" >> $GITHUB_OUTPUT
 
+      - name: set status
+        uses: myrotvorets/set-commit-status-action@master
+        with:
+          repo: cloudposse/argocd-deploy-non-prod-test
+          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          status: success
+          context: Deployed
 
   assert:
     runs-on: ubuntu-latest
