@@ -119,6 +119,7 @@ runs:
       shell: bash
       run: |
         sudo chmod 777 ./platform.yaml 
+        
         yq --exit-status --no-colors --inplace eval '{"platform": .}' ./platform.yaml
 
     - name: Read platform metadata
