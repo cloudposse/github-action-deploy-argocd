@@ -188,7 +188,7 @@ runs:
           --namespace ${{ inputs.namespace }} \
           --set ingress.default.hosts.example=test \
           --values $(pwd)/platform.yaml \
-          --values ${{ inputs.values_file }} \
+          --values "${{ inputs.values_file }}" \
           ${{ steps.arguments.outputs.kube_version }} \
         > ${{ steps.config.outputs.tmp }}/manifests/resources.yaml
       env:
