@@ -50,6 +50,10 @@ inputs:
     description: Debug mode
     default: 'false'
     required: false
+  values_file:
+    description: Helmfile values file
+    default: ""
+    required: false
   release_label_name:
     description: The name of the label used to describe the helm release
     default: "release"
@@ -137,7 +141,7 @@ runs:
         for output in $(yq --exit-status --no-colors eval-all '. | to_entries | map( .key + "=" + .value ) | join("\n")' ./_metadata.yaml); do
           echo "${output}" >> $GITHUB_OUTPUT ;
         done
-        
+
     - name: Context
       if: ${{ inputs.operation == 'deploy' }}
       id: arguments
@@ -179,10 +183,12 @@ runs:
         helm template ${{ inputs.application }} ${{ inputs.path }} \
           --set image.repository=${{ inputs.image }} \
           --set image.tag=${{ inputs.image-tag }} \
+          --set environment=${{ inputs.environment }} \
           --create-namespace=true \
           --namespace ${{ inputs.namespace }} \
           --set ingress.default.hosts.example=test \
           --values $(pwd)/platform.yaml \
+          --values "${{ inputs.values_file }}" \
           ${{ steps.arguments.outputs.kube_version }} \
         > ${{ steps.config.outputs.tmp }}/manifests/resources.yaml
       env:
