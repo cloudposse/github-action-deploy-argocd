@@ -166,6 +166,7 @@ Destroy environment
 | ssm-path | SSM path to read environment secrets | N/A | true |
 | synchronously | Wait until ArgoCD successfully apply the changes | false | false |
 | toolchain | Toolchain ('helm', 'helmfile') | helmfile | false |
+| values\_file | Helmfile values file |  | false |
 
 
 ## Outputs
