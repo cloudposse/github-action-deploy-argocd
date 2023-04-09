@@ -74,6 +74,8 @@ jobs:
           github-pat: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           image: nginx
           image-tag: ${{ needs.setup.outputs.random }}
+          repository: ${{ github.repository }}
+          gitref-sha: ${{ github.sha }}
         env:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
@@ -146,6 +148,20 @@ jobs:
           expected: "networking.k8s.io/v1"
           actual: "${{ steps.ingress.outputs.value }}"
 
+      - name: Get ref
+        id: app_commit
+        shell: bash
+        run: |-
+          app_commit=$( \
+            yq eval-all '.app_commit' \
+              ./assert/plat/ue2-sandbox/apps/staging/test-app/config.yaml
+          )
+          echo "value=${app_commit}" >> $GITHUB_OUTPUT
+
+      - uses: nick-fields/assert-action@v1
+        with:
+          expected: "${{ github.sha }}"
+          actual: "${{ steps.app_commit.outputs.value }}"
 
   teardown:
     runs-on: ubuntu-latest

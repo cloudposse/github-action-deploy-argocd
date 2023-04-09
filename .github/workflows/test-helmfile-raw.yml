@@ -18,9 +18,11 @@ jobs:
         shell: bash
         run: |-
           echo "password=$(echo $RANDOM | md5sum | head -c 20)" >> $GITHUB_OUTPUT
+          echo "environment=$(echo $RANDOM | md5sum | head -c 20)" >> $GITHUB_OUTPUT
 
     outputs:
       random: ${{ steps.random.outputs.password }}
+      environment: ${{ steps.random.outputs.environment }}
 
 
   test:
@@ -44,12 +46,12 @@ jobs:
 
       - run: |
           aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} ssm put-parameter \
-            --name "/platform/default/staging/default_ingress_domain" \
+            --name "/platform/default/${{ needs.setup.outputs.environment }}/default_ingress_domain" \
             --type "SecureString" \
             --value "example.com"
           
           aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} ssm put-parameter \
-            --name "/platform/default/staging/default_alb_ingress_group" \
+            --name "/platform/default/${{ needs.setup.outputs.environment }}/default_alb_ingress_group" \
             --type "SecureString" \
             --value "default" \
             --debug
@@ -72,8 +74,8 @@ jobs:
         with:
           cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
           toolchain: helmfile
-          environment: staging
-          namespace: staging
+          environment: ${{ needs.setup.outputs.environment }}
+          namespace: ${{ needs.setup.outputs.environment }}
           path: ./action/test/helmfile/helmfile.yaml
           application: test-app
           ssm-path: platform/default
@@ -81,6 +83,8 @@ jobs:
           image: nginx
           image-tag: ${{ needs.setup.outputs.random }}
           synchronously: true
+          repository: ${{ github.repository }}
+          ref: ${{ github.sha }}
         env:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
@@ -151,11 +155,11 @@ jobs:
       - name: set status
         uses: myrotvorets/set-commit-status-action@master
         with:
-          repo: cloudposse/argocd-deploy-non-prod-test
-          sha: ${{ steps.wait.outputs.sha }}
+          repo: ${{ github.repository }}
+          sha: ${{ github.sha }}
           token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           status: success
-          context: continuous-delivery/staging.test-app
+          context: continuous-delivery/${{ needs.setup.outputs.environment }}.test-app
 
   assert:
     runs-on: ubuntu-latest
@@ -191,7 +195,7 @@ jobs:
         run: |-
           image=$( \
             yq eval-all '.spec.template.spec.containers[].image | select(. != null)' \
-              ./assert/plat/ue2-sandbox/apps/staging/test-app/manifests/resources.yaml \
+              ./assert/plat/ue2-sandbox/apps/${{ needs.setup.outputs.environment }}/test-app/manifests/resources.yaml \
           )
           echo "value=${image}" >> $GITHUB_OUTPUT
 
@@ -206,7 +210,7 @@ jobs:
         run: |-
           ingress=$( \
             yq eval-all 'select(.kind == "Ingress") | .apiVersion' \
-              ./assert/plat/ue2-sandbox/apps/staging/test-app/manifests/resources.yaml \
+              ./assert/plat/ue2-sandbox/apps/${{ needs.setup.outputs.environment }}/test-app/manifests/resources.yaml \
           )
           echo "value=${ingress}" >> $GITHUB_OUTPUT
 
@@ -221,14 +225,30 @@ jobs:
         run: |-
           name=$( \
             yq eval-all '.name' \
-              ./assert/plat/ue2-sandbox/apps/staging/test-app/config.yaml \
+              ./assert/plat/ue2-sandbox/apps/${{ needs.setup.outputs.environment }}/test-app/config.yaml \
           )
           echo "value=${name}" >> $GITHUB_OUTPUT
 
       - uses: nick-fields/assert-action@v1
         with:
-          expected: "staging.test-app"
+          expected: "${{ needs.setup.outputs.environment }}.test-app"
           actual: "${{ steps.name.outputs.value }}"
+
+
+      - name: Get ref
+        id: app_commit
+        shell: bash
+        run: |-
+          app_commit=$( \
+            yq eval-all '.app_commit' \
+              ./assert/plat/ue2-sandbox/apps/${{ needs.setup.outputs.environment }}/test-app/config.yaml \
+          )
+          echo "value=${app_commit}" >> $GITHUB_OUTPUT
+
+      - uses: nick-fields/assert-action@v1
+        with:
+          expected: "${{ github.sha }}"
+          actual: "${{ steps.app_commit.outputs.value }}"
 
 
   teardown:
