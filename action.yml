@@ -213,6 +213,18 @@ runs:
         )
         echo "webapp_url=${WEBAPP_URL}" >> $GITHUB_OUTPUT
 
+    - name: Deplicated Ref
+      if: ${{ inputs.operation == 'deploy' }}
+      id: ref
+      uses: cloudposse/github-action-yaml-config-query@0.1.2
+      with:
+        query: .${{ inputs.ref == '' }}
+        config: |-
+          true: 
+            value: ${{ inputs.gitref-sha }}
+          false:
+            value: ${{ inputs.ref }}      
+
     - name: Config render
       if: ${{ inputs.operation == 'deploy' }}
       uses: 1arp/create-a-file-action@0.2
@@ -221,7 +233,7 @@ runs:
         file: config.yaml
         content: |-
           app_repository: ${{ inputs.repository }}
-          app_commit: ${{ inputs.ref }}
+          app_commit: ${{ steps.ref.outputs.value }}
           app_hostname: ${{ steps.result.outputs.webapp_url }}
           name: ${{ inputs.namespace }}.${{ inputs.application }}
           namespace: ${{ inputs.namespace }}
