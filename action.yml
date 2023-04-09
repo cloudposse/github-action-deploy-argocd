@@ -30,8 +30,15 @@ inputs:
     description: Helmfile environment
     required: false
     default: preview
+  repository:
+    description: Application GitHub repository full name
+    default: ""
+    required: false
+  ref:
+    description: Git ref
+    required: true
   gitref-sha:
-    description: Git SHA
+    description: Git SHA (Depricated. Use `ref` instead)
     required: false
     default: ''
   namespace:
@@ -214,9 +221,8 @@ runs:
         path: ${{ steps.config.outputs.tmp }}
         file: config.yaml
         content: |-
-          deployment_id: 1
-          app_repository: ${{ inputs.application }}
-          app_commit: ${{ inputs.gitref-sha }}
+          app_repository: ${{ inputs.repository }}
+          app_commit: ${{ inputs.ref }}
           app_hostname: ${{ steps.result.outputs.webapp_url }}
           name: ${{ inputs.namespace }}.${{ inputs.application }}
           namespace: ${{ inputs.namespace }}
@@ -272,10 +278,10 @@ runs:
     - uses: rafarlopes/wait-for-commit-status-action@v1
       if: ${{ inputs.synchronously == 'true' }}
       env:
-        GITHUB_REPOSITORY: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
+        GITHUB_REPOSITORY: ${{ inputs.repository }}
         GITHUB_TOKEN: ${{ inputs.github-pat }}
       with:
         # Context for which we should look for the matching status
         context: continuous-delivery/${{ inputs.namespace }}.${{ inputs.application }}
         # The commit sha we should look for the status
-        sha: ${{ steps.git.outputs.sha }}
+        sha: ${{ inputs.ref }}
