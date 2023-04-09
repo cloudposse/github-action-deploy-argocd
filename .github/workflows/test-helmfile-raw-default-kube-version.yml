@@ -74,6 +74,8 @@ jobs:
           github-pat: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           image: nginx
           image-tag: ${{ needs.setup.outputs.random }}
+          repository: ${{ github.repository }}
+          gitref-sha: ${{ github.sha }}
         env:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
