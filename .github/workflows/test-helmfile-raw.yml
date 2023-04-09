@@ -81,6 +81,8 @@ jobs:
           image: nginx
           image-tag: ${{ needs.setup.outputs.random }}
           synchronously: true
+          repository: ${{ github.repository }}
+          ref: ${{ github.sha }}
         env:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
@@ -151,8 +153,8 @@ jobs:
       - name: set status
         uses: myrotvorets/set-commit-status-action@master
         with:
-          repo: cloudposse/argocd-deploy-non-prod-test
-          sha: ${{ steps.wait.outputs.sha }}
+          repo: ${{ github.repository }}
+          sha: ${{ github.sha }}
           token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           status: success
           context: continuous-delivery/staging.test-app
