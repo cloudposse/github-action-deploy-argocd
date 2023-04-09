@@ -154,7 +154,7 @@ jobs:
         run: |-
           app_commit=$( \
             yq eval-all '.app_commit' \
-              ./assert/plat/ue2-sandbox/apps/staging/test-app/manifests/resources.yaml \
+              ./assert/plat/ue2-sandbox/apps/staging/test-app/config.yaml
           )
           echo "value=${app_commit}" >> $GITHUB_OUTPUT
 
