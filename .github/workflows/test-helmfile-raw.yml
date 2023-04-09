@@ -18,9 +18,11 @@ jobs:
         shell: bash
         run: |-
           echo "password=$(echo $RANDOM | md5sum | head -c 20)" >> $GITHUB_OUTPUT
+          echo "environment=$(echo $RANDOM | md5sum | head -c 20)" >> $GITHUB_OUTPUT
 
     outputs:
       random: ${{ steps.random.outputs.password }}
+      environment: ${{ steps.random.outputs.environment }}
 
 
   test:
@@ -44,12 +46,12 @@ jobs:
 
       - run: |
           aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} ssm put-parameter \
-            --name "/platform/default/staging/default_ingress_domain" \
+            --name "/platform/default/${{ needs.setup.outputs.environment }}/default_ingress_domain" \
             --type "SecureString" \
             --value "example.com"
           
           aws ${AWS_ENDPOINT_OVERRIDE:+--endpoint-url $AWS_ENDPOINT_OVERRIDE} ssm put-parameter \
-            --name "/platform/default/staging/default_alb_ingress_group" \
+            --name "/platform/default/${{ needs.setup.outputs.environment }}/default_alb_ingress_group" \
             --type "SecureString" \
             --value "default" \
             --debug
@@ -72,7 +74,7 @@ jobs:
         with:
           cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
           toolchain: helmfile
-          environment: staging
+          environment: ${{ needs.setup.outputs.environment }}
           namespace: staging
           path: ./action/test/helmfile/helmfile.yaml
           application: test-app
@@ -157,7 +159,7 @@ jobs:
           sha: ${{ github.sha }}
           token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           status: success
-          context: continuous-delivery/staging.test-app
+          context: continuous-delivery/${{ needs.setup.outputs.environment }}.test-app
 
   assert:
     runs-on: ubuntu-latest
