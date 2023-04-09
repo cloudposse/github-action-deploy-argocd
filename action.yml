@@ -32,8 +32,7 @@ inputs:
     default: preview
   repository:
     description: Application GitHub repository full name
-    default: ""
-    required: false
+    required: true
   ref:
     description: Git ref
     required: true
