@@ -75,7 +75,7 @@ jobs:
           cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
           toolchain: helmfile
           environment: ${{ needs.setup.outputs.environment }}
-          namespace: staging
+          namespace: ${{ needs.setup.outputs.environment }}
           path: ./action/test/helmfile/helmfile.yaml
           application: test-app
           ssm-path: platform/default
