@@ -195,7 +195,7 @@ jobs:
         run: |-
           image=$( \
             yq eval-all '.spec.template.spec.containers[].image | select(. != null)' \
-              ./assert/plat/ue2-sandbox/apps/staging/test-app/manifests/resources.yaml \
+              ./assert/plat/ue2-sandbox/apps/${{ needs.setup.outputs.environment }}/test-app/manifests/resources.yaml \
           )
           echo "value=${image}" >> $GITHUB_OUTPUT
 
@@ -210,7 +210,7 @@ jobs:
         run: |-
           ingress=$( \
             yq eval-all 'select(.kind == "Ingress") | .apiVersion' \
-              ./assert/plat/ue2-sandbox/apps/staging/test-app/manifests/resources.yaml \
+              ./assert/plat/ue2-sandbox/apps/${{ needs.setup.outputs.environment }}/test-app/manifests/resources.yaml \
           )
           echo "value=${ingress}" >> $GITHUB_OUTPUT
 
@@ -225,7 +225,7 @@ jobs:
         run: |-
           name=$( \
             yq eval-all '.name' \
-              ./assert/plat/ue2-sandbox/apps/staging/test-app/config.yaml \
+              ./assert/plat/ue2-sandbox/apps/${{ needs.setup.outputs.environment }}/test-app/config.yaml \
           )
           echo "value=${name}" >> $GITHUB_OUTPUT
 
