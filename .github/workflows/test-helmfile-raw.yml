@@ -231,8 +231,24 @@ jobs:
 
       - uses: nick-fields/assert-action@v1
         with:
-          expected: "staging.test-app"
+          expected: "${{ needs.setup.outputs.environment }}.test-app"
           actual: "${{ steps.name.outputs.value }}"
+
+
+      - name: Get ref
+        id: app_commit
+        shell: bash
+        run: |-
+          app_commit=$( \
+            yq eval-all '.app_commit' \
+              ./assert/plat/ue2-sandbox/apps/${{ needs.setup.outputs.environment }}/test-app/config.yaml \
+          )
+          echo "value=${app_commit}" >> $GITHUB_OUTPUT
+
+      - uses: nick-fields/assert-action@v1
+        with:
+          expected: "${{ github.sha }}"
+          actual: "${{ steps.app_commit.outputs.value }}"
 
 
   teardown:
