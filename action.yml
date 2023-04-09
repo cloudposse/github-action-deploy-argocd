@@ -218,12 +218,12 @@ runs:
       id: ref
       uses: cloudposse/github-action-yaml-config-query@0.1.2
       with:
-        query: .${{ inputs.ref == '' }}
+        query: .${{ inputs.gitref-sha == '' }}
         config: |-
           true: 
-            value: ${{ inputs.gitref-sha }}
+            value: ${{ inputs.ref }}
           false:
-            value: ${{ inputs.ref }}      
+            value: ${{ inputs.gitref-sha }}      
 
     - name: Config render
       if: ${{ inputs.operation == 'deploy' }}
