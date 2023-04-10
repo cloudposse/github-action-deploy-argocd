@@ -287,7 +287,7 @@ runs:
           popd
 
     - uses: rafarlopes/wait-for-commit-status-action@v1
-      if: ${{ inputs.synchronously == 'true' }}
+      if: ${{ inputs.synchronously == 'true' && inputs.operation == 'deploy' }}
       env:
         GITHUB_REPOSITORY: ${{ inputs.repository }}
         GITHUB_TOKEN: ${{ inputs.github-pat }}
