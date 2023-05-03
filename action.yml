@@ -114,7 +114,7 @@ runs:
           path: ${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}
 
     - name: Checkout Argo Configuration
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
         ref: ${{ steps.destination.outputs.ref }}
