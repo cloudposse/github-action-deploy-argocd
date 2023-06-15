@@ -176,6 +176,7 @@ runs:
           --environment ${{ inputs.environment }} \
           --file ${{ inputs.path}} \
           --state-values-file $(pwd)/platform.yaml \
+          --state-values-file "${{ inputs.values_file }}" \
           template \
           --args="${{ steps.arguments.outputs.kube_version }}" \
           > ${{ steps.config.outputs.tmp }}/manifests/resources.yaml
