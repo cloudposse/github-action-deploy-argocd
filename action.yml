@@ -168,6 +168,18 @@ runs:
       run: |
         mkdir -p ${{ steps.config.outputs.tmp }}/manifests
 
+    - name: Read values file
+      id: values-file
+      if: ${{ inputs.debug && inputs.values_file != '' }}
+      uses: juliangruber/read-file-action@v1
+      with:
+        path: ${{ inputs.values_file }}
+
+    - name: Echo values file content
+      if: ${{ inputs.debug && inputs.values_file != '' }}
+      shell: bash
+      run: echo "${{ steps.values-file.outputs.content }}"
+
     - name: Helmfile render
       if: ${{ inputs.toolchain == 'helmfile' && inputs.operation == 'deploy' }}
       shell: bash
