@@ -170,13 +170,13 @@ runs:
 
     - name: Read values file
       id: values-file
-      if: ${{ inputs.debug && inputs.values_file != '' }}
+      if: ${{ inputs.debug == 'true' && inputs.values_file != '' }}
       uses: juliangruber/read-file-action@v1
       with:
         path: ${{ inputs.values_file }}
 
     - name: Echo values file content
-      if: ${{ inputs.debug && inputs.values_file != '' }}
+      if: ${{ inputs.debug == 'true' && inputs.values_file != '' }}
       shell: bash
       run: echo "${{ steps.values-file.outputs.content }}"
 
