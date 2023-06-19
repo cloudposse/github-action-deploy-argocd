@@ -182,6 +182,8 @@ runs:
 
     - name: Create debug flag for helm
       if: ${{ inputs.debug == 'true' }}
+      shell: bash
+      run: |
       env: 
         - HELM_DEBUG_FLAG="--debug"
 
