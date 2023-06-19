@@ -182,8 +182,8 @@ runs:
 
     - name: Create debug flag for helm
       if: ${{ inputs.debug == 'true' }}
-      env:
-        HELM_DEBUG_FLAG: "--debug"
+      shell: bash
+      run: echo "HELM_DEBUG_FLAG=--debug" >> $GITHUB_ENV
 
     - name: Helmfile render
       if: ${{ inputs.toolchain == 'helmfile' && inputs.operation == 'deploy' }}
