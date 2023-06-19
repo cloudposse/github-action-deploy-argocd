@@ -180,11 +180,17 @@ runs:
       shell: bash
       run: echo "${{ steps.values-file.outputs.content }}"
 
+    - name: Create debug flag for helm
+      if: ${{ inputs.debug == 'true' }}
+      env: 
+        - HELM_DEBUG_FLAG="--debug"
+
     - name: Helmfile render
       if: ${{ inputs.toolchain == 'helmfile' && inputs.operation == 'deploy' }}
       shell: bash
       run: |
         helmfile --namespace ${{ inputs.namespace }} \
+          ${{ env.HELM_DEBUG_FLAG }} \
           --environment ${{ inputs.environment }} \
           --file ${{ inputs.path}} \
           --state-values-file $(pwd)/platform.yaml \
@@ -206,6 +212,7 @@ runs:
           --set environment=${{ inputs.environment }} \
           --create-namespace=true \
           --namespace ${{ inputs.namespace }} \
+          ${{ env.HELM_DEBUG_FLAG }} \
           --set ingress.default.hosts.example=test \
           --values $(pwd)/platform.yaml \
           --values "${{ inputs.values_file }}" \
