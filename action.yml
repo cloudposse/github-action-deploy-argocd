@@ -43,7 +43,7 @@ inputs:
   namespace:
     description: Kubernetes namespace
     required: true
-  application:
+  app-name:
     description: Application name
     required: true
   image:
@@ -110,8 +110,8 @@ runs:
       uses: cloudposse/github-action-yaml-config-query@0.1.3
       with:
         config: |-
-          tmp: ./tmp/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}
-          path: ${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}
+          tmp: ./tmp/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.app-name }}
+          path: ${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.app-name }}
 
     - name: Checkout Argo Configuration
       uses: actions/checkout@v2
@@ -206,7 +206,7 @@ runs:
       if: ${{ inputs.toolchain == 'helm' && inputs.operation == 'deploy' }}
       shell: bash
       run: |
-        helm template ${{ inputs.application }} ${{ inputs.path }} \
+        helm template ${{ inputs.app-name }} ${{ inputs.path }} \
           --set image.repository=${{ inputs.image }} \
           --set image.tag=${{ inputs.image-tag }} \
           --set environment=${{ inputs.environment }} \
@@ -255,7 +255,7 @@ runs:
           app_repository: ${{ inputs.repository }}
           app_commit: ${{ steps.ref.outputs.value }}
           app_hostname: ${{ steps.result.outputs.webapp_url }}
-          name: ${{ inputs.namespace }}.${{ inputs.application }}
+          name: ${{ inputs.namespace }}.${{ inputs.app-name }}
           namespace: ${{ inputs.namespace }}
           manifests: ${{ steps.config.outputs.path }}/manifests
 
@@ -313,6 +313,6 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github-pat }}
       with:
         # Context for which we should look for the matching status
-        context: continuous-delivery/${{ inputs.namespace }}.${{ inputs.application }}
+        context: continuous-delivery/${{ inputs.namespace }}.${{ inputs.app-name }}
         # The commit sha we should look for the status
         sha: ${{ inputs.ref }}
