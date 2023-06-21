@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   perform:
-    uses: cloudposse/github-actions-workflows-github-action-composite/.github/workflows/main-branch.yml@main
+    uses: cloudposse/github-actions-workflows-github-action-composite/.github/workflows/main-branch.yaml@main
     with:
       organization: "${{ github.event.repository.owner.login }}"
       repository: "${{ github.event.repository.name }}"
