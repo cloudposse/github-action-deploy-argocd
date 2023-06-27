@@ -70,8 +70,16 @@ inputs:
   synchronously:
     description: "Wait until ArgoCD successfully apply the changes"
     default: 'false'
-  check-interval:
-    description: 'Time between checks (in seconds)'
+  check-timeout:
+    description: 'Timeout check (in seconds) (for synchronously mode)'
+    required: false
+    default: "600"
+  check-retry-count:
+    description: 'Check retry count (for synchronously mode)'
+    required: false
+    default: "5"
+  check-retry-interval:
+    description: 'Check retry interval (in seconds) (for synchronously mode)'
     required: false
     default: "10"
 outputs:
@@ -336,9 +344,9 @@ runs:
           
           // Usage
           const options = {
-            timeout: 600000, // 10 minutes timeout
-            retryCount: 10, // Retry 5 times before giving up
-            retryInterval: 10000 // 10 seconds interval between retries
+            timeout: 1000 * ${{ inputs.check-timeout }}, // Convert from seconds to milliseconds
+            retryCount: ${{ inputs.check-retry-count }}, // Retry 5 times before giving up
+            retryInterval: 1000 * ${{ inputs.check-retry-interval }} // Convert from seconds to milliseconds
           };
           
           owner = "${{ inputs.repository }}".split("/")[0]
