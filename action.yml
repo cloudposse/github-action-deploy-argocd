@@ -312,20 +312,20 @@ runs:
               const matchingStatus = statuses.find((status) => status.context === statusContext);
               if (matchingStatus && matchingStatus.state === "success") {
                 console.log(`Commit status "${statusContext}" is now a success.`);
-                return;
+                return true;
               }
           
               attemptCount++;
           
               if (attemptCount >= retryCount) {
                 console.log(`Exceeded maximum retry count. Exiting...`);
-                process.exit(1); // Exit with status code 1
+                return false;
               }
           
               const elapsedTime = Date.now() - startTime;
               if (elapsedTime >= timeout) {
                 console.log(`Timeout reached. Exiting...`);
-                process.exit(1); // Exit with status code 1
+                return false;
               }
           
               console.log(`Waiting for commit status "${statusContext}" to become a success...`);
@@ -342,9 +342,14 @@ runs:
           };
 
           waitForCommitStatusSuccess("${{ steps.destination.outputs.owner }}", "${{ steps.destination.outputs.name }}", "${{ inputs.ref }}", "continuous-delivery/${{ inputs.namespace }}.${{ inputs.application }}", options)
-            .then(() => {
+            .then((result) => {
               console.log("Done waiting.");
+              if (result) {
+                process.exit(0)
+              }
+              process.exit(1)
             })
             .catch((error) => {
               console.error("Error:", error);
+              process.exit(1); // Exit with status code 1
             });          
