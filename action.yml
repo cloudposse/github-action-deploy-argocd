@@ -340,8 +340,11 @@ runs:
             retryCount: 10, // Retry 5 times before giving up
             retryInterval: 10000 // 10 seconds interval between retries
           };
+          
+          owner = "${{ inputs.repository }}".split("/")[0]
+          repo = "${{ inputs.repository }}".split("/")[1]
 
-          waitForCommitStatusSuccess("${{ steps.destination.outputs.owner }}", "${{ steps.destination.outputs.name }}", "${{ inputs.ref }}", "continuous-delivery/${{ inputs.namespace }}.${{ inputs.application }}", options)
+          waitForCommitStatusSuccess(owner, repo, "${{ inputs.ref }}", "continuous-delivery/${{ inputs.namespace }}.${{ inputs.application }}", options)
             .then((result) => {
               console.log("Done waiting.");
               if (result) {
