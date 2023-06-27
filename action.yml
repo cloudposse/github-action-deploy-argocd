@@ -293,6 +293,7 @@ runs:
     - uses: actions/github-script@v6
       if: ${{ inputs.synchronously == 'true' && inputs.operation == 'deploy' }}
       with:
+        github-token: ${{ inputs.github-pat }}
         script: |
           // Function to wait for a specific commit status to become a success
           async function waitForCommitStatusSuccess(owner, repo, commitSha, statusContext, options = {}) {
@@ -339,8 +340,8 @@ runs:
             retryCount: 5, // Retry 5 times before giving up
             retryInterval: 10000 // 10 seconds interval between retries
           };
-                    
-          waitForCommitStatusSuccess("${{ inputs.repository }}", "${{ inputs.github-pat }}", "${{ inputs.ref }}", "continuous-delivery/${{ inputs.namespace }}.${{ inputs.application }}", options)
+
+          waitForCommitStatusSuccess("${{ steps.destination.outputs.owner }}", "${{ steps.destination.outputs.name }}", "${{ inputs.ref }}", "continuous-delivery/${{ inputs.namespace }}.${{ inputs.application }}", options)
             .then(() => {
               console.log("Done waiting.");
             })
