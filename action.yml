@@ -337,7 +337,7 @@ runs:
           // Usage
           const options = {
             timeout: 600000, // 10 minutes timeout
-            retryCount: 5, // Retry 5 times before giving up
+            retryCount: 10, // Retry 5 times before giving up
             retryInterval: 10000 // 10 seconds interval between retries
           };
 
