@@ -152,14 +152,14 @@ jobs:
           
           echo "sha=${SHA}" >> $GITHUB_OUTPUT
 
-      - name: set status
-        uses: myrotvorets/set-commit-status-action@master
-        with:
-          repo: ${{ github.repository }}
-          sha: ${{ github.sha }}
-          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
-          status: success
-          context: continuous-delivery/${{ needs.setup.outputs.environment }}.test-app
+#      - name: set status
+#        uses: myrotvorets/set-commit-status-action@master
+#        with:
+#          repo: ${{ github.repository }}
+#          sha: ${{ github.sha }}
+#          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+#          status: success
+#          context: continuous-delivery/${{ needs.setup.outputs.environment }}.test-app
 
   assert:
     runs-on: ubuntu-latest
