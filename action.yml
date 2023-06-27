@@ -128,7 +128,7 @@ runs:
       uses: docker://public.ecr.aws/u3q6g8t1/chamber:2.10.12
       if: ${{ inputs.operation == 'deploy' }}
       with:
-        args: --verbose export ${{ inputs.service-config-ssm-path }}/${{ inputs.environment }} --format yaml --output-file ./service.yaml
+        args: --verbose export ${{ inputs.service-config-ssm-path }} --format yaml --output-file ./service.yaml
 
     - name: YQ Platform settings
       if: ${{ inputs.operation == 'deploy' }}
@@ -141,7 +141,7 @@ runs:
       uses: docker://public.ecr.aws/u3q6g8t1/chamber:2.10.12
       if: ${{ inputs.operation == 'deploy' }}
       with:
-        args: --verbose export ${{ inputs.platform-ssm-path }}/${{ inputs.environment }} --format yaml --output-file ./platform.yaml
+        args: --verbose export ${{ inputs.platform-ssm-path }} --format yaml --output-file ./platform.yaml
 
     - name: YQ Platform settings
       if: ${{ inputs.operation == 'deploy' }}
@@ -150,20 +150,20 @@ runs:
         sudo chmod 777 ./platform.yaml 
         yq --exit-status --no-colors --inplace eval '{"platform": .}' ./platform.yaml
 
-    - name: Read platform metadata
-      uses: docker://public.ecr.aws/u3q6g8t1/chamber:2.10.12
-      if: ${{ inputs.operation == 'deploy' }}
-      with:
-        args: --verbose export ${{ inputs.platform-ssm-path }}/_metadata --format yaml --output-file ./_metadata.yaml
+    # - name: Read platform metadata
+    #   uses: docker://public.ecr.aws/u3q6g8t1/chamber:2.10.12
+    #   if: ${{ inputs.operation == 'deploy' }}
+    #   with:
+    #     args: --verbose export ${{ inputs.platform-ssm-path }}/_metadata --format yaml --output-file ./_metadata.yaml
 
-    - name: YQ Platform settings
-      if: ${{ inputs.operation == 'deploy' }}
-      shell: bash
-      id: metadata
-      run: |
-        for output in $(yq --exit-status --no-colors eval-all '. | to_entries | map( .key + "=" + .value ) | join("\n")' ./_metadata.yaml); do
-          echo "${output}" >> $GITHUB_OUTPUT ;
-        done
+    # - name: YQ Platform settings
+    #   if: ${{ inputs.operation == 'deploy' }}
+    #   shell: bash
+    #   id: metadata
+    #   run: |
+    #     for output in $(yq --exit-status --no-colors eval-all '. | to_entries | map( .key + "=" + .value ) | join("\n")' ./_metadata.yaml); do
+    #       echo "${output}" >> $GITHUB_OUTPUT ;
+    #     done
 
     - name: Context
       if: ${{ inputs.operation == 'deploy' }}
