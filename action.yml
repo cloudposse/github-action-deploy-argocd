@@ -318,13 +318,13 @@ runs:
           
               if (attemptCount >= retryCount) {
                 console.log(`Exceeded maximum retry count. Exiting...`);
-                return;
+                process.exit(1); // Exit with status code 1
               }
           
               const elapsedTime = Date.now() - startTime;
               if (elapsedTime >= timeout) {
                 console.log(`Timeout reached. Exiting...`);
-                return;
+                process.exit(1); // Exit with status code 1
               }
           
               console.log(`Waiting for commit status "${statusContext}" to become a success...`);
@@ -339,7 +339,7 @@ runs:
             retryCount: 5, // Retry 5 times before giving up
             retryInterval: 10000 // 10 seconds interval between retries
           };
-          
+                    
           waitForCommitStatusSuccess("${{ inputs.repository }}", "${{ inputs.github-pat }}", "${{ inputs.ref }}", "continuous-delivery/${{ inputs.namespace }}.${{ inputs.application }}", options)
             .then(() => {
               console.log("Done waiting.");
