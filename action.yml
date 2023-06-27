@@ -294,18 +294,15 @@ runs:
       if: ${{ inputs.synchronously == 'true' && inputs.operation == 'deploy' }}
       with:
         script: |
-          const { Octokit } = require("@octokit/rest");
-          
           // Function to wait for a specific commit status to become a success
           async function waitForCommitStatusSuccess(owner, repo, commitSha, statusContext, options = {}) {
-            const octokit = new Octokit();
             const { timeout = 300000, retryCount = 10, retryInterval = 5000 } = options;
             const startTime = Date.now();
           
             let attemptCount = 0;
           
             while (true) {
-              const { data: statuses } = await octokit.repos.listCommitStatusesForRef({
+              const { data: statuses } = await github.rest.repos.listCommitStatusesForRef({
                 owner,
                 repo,
                 ref: commitSha,
