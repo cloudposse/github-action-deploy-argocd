@@ -19,9 +19,12 @@ inputs:
     description: Toolchain ('helm', 'helmfile')
     required: false
     default: helmfile
-  ssm-path:
+  service-ssm-path:
     required: true
-    description: SSM path to read environment secrets
+    description: SSM path to read service secrets
+  platform-ssm-path:
+    required: true
+    description: SSM path to read platform secrets
   operation:
     description: Operation with helmfiles. (valid options - `deploy`, `destroy`)
     required: true
@@ -121,11 +124,24 @@ runs:
         token: ${{ inputs.github-pat }}
         path: ${{ steps.destination_dir.outputs.name }}
 
+    - name: Read service context
+      uses: docker://public.ecr.aws/u3q6g8t1/chamber:2.10.12
+      if: ${{ inputs.operation == 'deploy' }}
+      with:
+        args: --verbose export ${{ inputs.service-ssm-path }}/${{ inputs.environment }} --format yaml --output-file ./service.yaml
+
+    - name: YQ Platform settings
+      if: ${{ inputs.operation == 'deploy' }}
+      shell: bash
+      run: |
+        sudo chmod 777 ./service.yaml 
+        yq --exit-status --no-colors --inplace eval '{"service": .}' ./service.yaml
+
     - name: Read platform context
       uses: docker://public.ecr.aws/u3q6g8t1/chamber:2.10.12
       if: ${{ inputs.operation == 'deploy' }}
       with:
-        args: --verbose export ${{ inputs.ssm-path }}/${{ inputs.environment }} --format yaml --output-file ./platform.yaml
+        args: --verbose export ${{ inputs.platform-ssm-path }}/${{ inputs.environment }} --format yaml --output-file ./platform.yaml
 
     - name: YQ Platform settings
       if: ${{ inputs.operation == 'deploy' }}
@@ -138,7 +154,7 @@ runs:
       uses: docker://public.ecr.aws/u3q6g8t1/chamber:2.10.12
       if: ${{ inputs.operation == 'deploy' }}
       with:
-        args: --verbose export ${{ inputs.ssm-path }}/_metadata --format yaml --output-file ./_metadata.yaml
+        args: --verbose export ${{ inputs.platform-ssm-path }}/_metadata --format yaml --output-file ./_metadata.yaml
 
     - name: YQ Platform settings
       if: ${{ inputs.operation == 'deploy' }}
@@ -193,6 +209,7 @@ runs:
           ${{ env.HELM_DEBUG_FLAG }} \
           --environment ${{ inputs.environment }} \
           --file ${{ inputs.path}} \
+          --state-values-file $(pwd)/service.yaml \
           --state-values-file $(pwd)/platform.yaml \
           --state-values-file "${{ inputs.values_file }}" \
           template \
@@ -214,6 +231,7 @@ runs:
           --namespace ${{ inputs.namespace }} \
           ${{ env.HELM_DEBUG_FLAG }} \
           --set ingress.default.hosts.example=test \
+          --values $(pwd)/service.yaml \
           --values $(pwd)/platform.yaml \
           --values "${{ inputs.values_file }}" \
           ${{ steps.arguments.outputs.kube_version }} \

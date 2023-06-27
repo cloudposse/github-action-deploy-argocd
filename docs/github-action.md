@@ -19,7 +19,7 @@
 | ref | Git ref | N/A | true |
 | release\_label\_name | The name of the label used to describe the helm release | release | false |
 | repository | Application GitHub repository full name | N/A | true |
-| ssm-path | SSM path to read environment secrets | N/A | true |
+| platform-ssm-path | SSM path to read platform secrets | N/A | true |
 | synchronously | Wait until ArgoCD successfully apply the changes | false | false |
 | toolchain | Toolchain ('helm', 'helmfile') | helmfile | false |
 | values\_file | Helmfile values file |  | false |
