@@ -12,9 +12,13 @@ inputs:
     description: AWS region
     required: false
     default: us-east-1
-  path:
+  helm-file-path:
     description: The path where lives the helmfile or helm chart.
     required: true
+  helm-values-file:
+    description: Helm values file
+    default: ""
+    required: false
   toolchain:
     description: Toolchain ('helm', 'helmfile')
     required: false
@@ -58,10 +62,6 @@ inputs:
   debug:
     description: Debug mode
     default: 'false'
-    required: false
-  values-file:
-    description: Helmfile values file
-    default: ""
     required: false
   release-label-name:
     description: The name of the label used to describe the helm release
@@ -208,7 +208,7 @@ runs:
         helmfile --namespace ${{ inputs.namespace }} \
           ${{ env.HELM_DEBUG_FLAG }} \
           --environment ${{ inputs.environment }} \
-          --file ${{ inputs.path}} \
+          --file ${{ inputs.helm-file-path}} \
           --state-values-file $(pwd)/service.yaml \
           --state-values-file $(pwd)/platform.yaml \
           --state-values-file "${{ inputs.helm-values-file }}" \
@@ -223,7 +223,7 @@ runs:
       if: ${{ inputs.toolchain == 'helm' && inputs.operation == 'deploy' }}
       shell: bash
       run: |
-        helm template ${{ inputs.app-name }} ${{ inputs.path }} \
+        helm template ${{ inputs.app-name }} ${{ inputs.helm-file-path }} \
           --set image.repository=${{ inputs.image }} \
           --set image.tag=${{ inputs.image-tag }} \
           --set environment=${{ inputs.environment }} \
