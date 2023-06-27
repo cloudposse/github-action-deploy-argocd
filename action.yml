@@ -59,11 +59,11 @@ inputs:
     description: Debug mode
     default: 'false'
     required: false
-  values_file:
+  values-file:
     description: Helmfile values file
     default: ""
     required: false
-  release_label_name:
+  release-label-name:
     description: The name of the label used to describe the helm release
     default: "release"
     required: false
@@ -186,13 +186,13 @@ runs:
 
     - name: Read values file
       id: values-file
-      if: ${{ inputs.debug == 'true' && inputs.values_file != '' }}
+      if: ${{ inputs.debug == 'true' && inputs.values-file != '' }}
       uses: juliangruber/read-file-action@v1
       with:
-        path: ${{ inputs.values_file }}
+        path: ${{ inputs.values-file }}
 
     - name: Echo values file content
-      if: ${{ inputs.debug == 'true' && inputs.values_file != '' }}
+      if: ${{ inputs.debug == 'true' && inputs.values-file != '' }}
       shell: bash
       run: echo "${{ steps.values-file.outputs.content }}"
 
@@ -211,7 +211,7 @@ runs:
           --file ${{ inputs.path}} \
           --state-values-file $(pwd)/service.yaml \
           --state-values-file $(pwd)/platform.yaml \
-          --state-values-file "${{ inputs.values_file }}" \
+          --state-values-file "${{ inputs.values-file }}" \
           template \
           --args="${{ steps.arguments.outputs.kube_version }}" \
           > ${{ steps.config.outputs.tmp }}/manifests/resources.yaml
@@ -233,7 +233,7 @@ runs:
           --set ingress.default.hosts.example=test \
           --values $(pwd)/service.yaml \
           --values $(pwd)/platform.yaml \
-          --values "${{ inputs.values_file }}" \
+          --values "${{ inputs.values-file }}" \
           ${{ steps.arguments.outputs.kube_version }} \
         > ${{ steps.config.outputs.tmp }}/manifests/resources.yaml
       env:
