@@ -19,9 +19,9 @@ inputs:
     description: Toolchain ('helm', 'helmfile')
     required: false
     default: helmfile
-  service-ssm-path:
+  service-config-ssm-path:
     required: true
-    description: SSM path to read service secrets
+    description: SSM path to read service config secrets
   platform-ssm-path:
     required: true
     description: SSM path to read platform secrets
@@ -128,7 +128,7 @@ runs:
       uses: docker://public.ecr.aws/u3q6g8t1/chamber:2.10.12
       if: ${{ inputs.operation == 'deploy' }}
       with:
-        args: --verbose export ${{ inputs.service-ssm-path }}/${{ inputs.environment }} --format yaml --output-file ./service.yaml
+        args: --verbose export ${{ inputs.service-config-ssm-path }}/${{ inputs.environment }} --format yaml --output-file ./service.yaml
 
     - name: YQ Platform settings
       if: ${{ inputs.operation == 'deploy' }}
@@ -185,16 +185,16 @@ runs:
         mkdir -p ${{ steps.config.outputs.tmp }}/manifests
 
     - name: Read values file
-      id: values-file
-      if: ${{ inputs.debug == 'true' && inputs.values-file != '' }}
+      id: helm-values-file
+      if: ${{ inputs.debug == 'true' && inputs.helm-values-file != '' }}
       uses: juliangruber/read-file-action@v1
       with:
-        path: ${{ inputs.values-file }}
+        path: ${{ inputs.helm-values-file }}
 
     - name: Echo values file content
-      if: ${{ inputs.debug == 'true' && inputs.values-file != '' }}
+      if: ${{ inputs.debug == 'true' && inputs.helm-values-file != '' }}
       shell: bash
-      run: echo "${{ steps.values-file.outputs.content }}"
+      run: echo "${{ steps.helm-values-file.outputs.content }}"
 
     - name: Create debug flag for helm
       if: ${{ inputs.debug == 'true' }}
@@ -211,7 +211,7 @@ runs:
           --file ${{ inputs.path}} \
           --state-values-file $(pwd)/service.yaml \
           --state-values-file $(pwd)/platform.yaml \
-          --state-values-file "${{ inputs.values-file }}" \
+          --state-values-file "${{ inputs.helm-values-file }}" \
           template \
           --args="${{ steps.arguments.outputs.kube_version }}" \
           > ${{ steps.config.outputs.tmp }}/manifests/resources.yaml
@@ -233,7 +233,7 @@ runs:
           --set ingress.default.hosts.example=test \
           --values $(pwd)/service.yaml \
           --values $(pwd)/platform.yaml \
-          --values "${{ inputs.values-file }}" \
+          --values "${{ inputs.helm-values-file }}" \
           ${{ steps.arguments.outputs.kube_version }} \
         > ${{ steps.config.outputs.tmp }}/manifests/resources.yaml
       env:
