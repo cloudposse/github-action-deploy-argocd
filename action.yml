@@ -298,69 +298,14 @@ runs:
           
           popd
 
-    - uses: actions/github-script@v6
+    - uses: github-action-wait-commit-status@0.1.0
       if: ${{ inputs.synchronously == 'true' && inputs.operation == 'deploy' }}
       with:
-        github-token: ${{ inputs.github-pat }}
-        script: |
-          // Function to wait for a specific commit status to become a success
-          async function waitForCommitStatusSuccess(owner, repo, commitSha, statusContext, options = {}) {
-            const { timeout = 300000, retryCount = 10, retryInterval = 5000 } = options;
-            const startTime = Date.now();
-          
-            let attemptCount = 0;
-          
-            while (true) {
-              const { data: statuses } = await github.rest.repos.listCommitStatusesForRef({
-                owner,
-                repo,
-                ref: commitSha,
-              });
-          
-              const matchingStatus = statuses.find((status) => status.context === statusContext);
-              if (matchingStatus && matchingStatus.state === "success") {
-                console.log(`Commit status "${statusContext}" is now a success.`);
-                return true;
-              }
-          
-              attemptCount++;
-          
-              if (attemptCount >= retryCount) {
-                console.log(`Exceeded maximum retry count. Exiting...`);
-                return false;
-              }
-          
-              const elapsedTime = Date.now() - startTime;
-              if (elapsedTime >= timeout) {
-                console.log(`Timeout reached. Exiting...`);
-                return false;
-              }
-          
-              console.log(`Waiting for commit status "${statusContext}" to become a success...`);
-          
-              await new Promise((resolve) => setTimeout(resolve, retryInterval));
-            }
-          }
-          
-          // Usage
-          const options = {
-            timeout: 1000 * ${{ inputs.check-timeout }}, // Convert from seconds to milliseconds
-            retryCount: ${{ inputs.check-retry-count }}, // Retry 5 times before giving up
-            retryInterval: 1000 * ${{ inputs.check-retry-interval }} // Convert from seconds to milliseconds
-          };
-          
-          owner = "${{ inputs.repository }}".split("/")[0]
-          repo = "${{ inputs.repository }}".split("/")[1]
-
-          waitForCommitStatusSuccess(owner, repo, "${{ inputs.ref }}", "continuous-delivery/${{ inputs.namespace }}.${{ inputs.application }}", options)
-            .then((result) => {
-              console.log("Done waiting.");
-              if (result) {
-                process.exit(0)
-              }
-              process.exit(1)
-            })
-            .catch((error) => {
-              console.error("Error:", error);
-              process.exit(1); // Exit with status code 1
-            });          
+        repository: ${{ inputs.repository }}
+        sha: ${{ inputs.ref }}
+        status: "continuous-delivery/${{ inputs.namespace }}.${{ inputs.application }}"
+        expected_state: "success"
+        token: ${{ inputs.github-pat }}
+        check-timeout: ${{ inputs.check-timeout }}
+        check-retry-count: ${{ inputs.check-retry-count }}
+        check-retry-interval: ${{ inputs.check-retry-interval }}      
