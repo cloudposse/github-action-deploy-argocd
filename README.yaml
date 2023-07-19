@@ -5,7 +5,7 @@
 #
 
 # Name of this project
-name: github-action-deploy-helmfile
+name: github-action-deploy-argocd
 
 # Tags of this project
 tags:
@@ -18,13 +18,13 @@ tags:
 license: "APACHE2"
 
 # Canonical GitHub repo
-github_repo: cloudposse/github-action-deploy-helmfile
+github_repo: cloudposse/github-action-deploy-argocd
 
 # Badges to display
 badges:
   - name: "Latest Release"
-    image: "https://img.shields.io/github/release/cloudposse/github-action-deploy-helmfile.svg"
-    url: "https://github.com/cloudposse/github-action-deploy-helmfile/releases/latest"
+    image: "https://img.shields.io/github/release/cloudposse/github-action-deploy-argocd.svg"
+    url: "https://github.com/cloudposse/github-action-deploy-argocd/releases/latest"
   - name: "Slack Community"
     image: "https://slack.cloudposse.com/badge.svg"
     url: "https://slack.cloudposse.com"
@@ -32,18 +32,16 @@ badges:
 related: []
 
 # Short description of this project
-description: Deploy on Kubernetes with HelmFile
+description: Deploy on Kubernetes with ArgoCD
 
 introduction: |-
-  Deploy on Kubernetes with HelmFile. 
+  Deploy on Kubernetes with Helm/HelmFile and ArgoCD. 
 
 references:
   - name: "github-actions-workflows"
     description: "Reusable workflows for different types of projects"
     url: "https://github.com/cloudposse/github-actions-workflows"
-  - name: "example-github-action-release-workflow"
-    description: "Example application with complicated release workflow"
-    url: "https://github.com/cloudposse/example-github-action-release-workflow"
+
 
 # How to use this project
 usage: |-
@@ -71,17 +69,22 @@ usage: |-
               role-session-name: deploy
         
           - name: Deploy
-            uses: cloudposse/github-action-deploy-helmfile@main
+            uses: cloudposse/github-action-deploy-argocd@main
             id: deploy
             with:
-              aws-region: us-west-2
-              cluster: preview-eks
+              cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
+              toolchain: helmfile
               environment: preview
               namespace: preview
+              application: test-app
+              github-pat: ${{ secrets.GITHUB_AUTH_PAT }}
+              repository: ${{ github.repository }}
+              ref: ${{ github.event.pull_request.head.ref  }}
               image: nginx
               image-tag: latest
               operation: deploy
               debug: false
+              synchronously: true
     ```
 
 
@@ -108,10 +111,14 @@ usage: |-
             uses: cloudposse/github-action-deploy-helmfile@main
             id: destroy
             with:
-              aws-region: us-west-2
-              cluster: preview-eks
+              cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
+              toolchain: helmfile
               environment: preview
               namespace: preview
+              application: test-app
+              github-pat: ${{ secrets.GITHUB_AUTH_PAT }}
+              repository: ${{ github.repository }}
+              ref: ${{ github.event.pull_request.head.ref }}  
               image: "<none>"
               image-tag: "<none>"
               operation: destroy

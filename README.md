@@ -1,6 +1,6 @@
 
 <!-- markdownlint-disable -->
-# github-action-deploy-helmfile [![Latest Release](https://img.shields.io/github/release/cloudposse/github-action-deploy-helmfile.svg)](https://github.com/cloudposse/github-action-deploy-helmfile/releases/latest) [![Slack Community](https://slack.cloudposse.com/badge.svg)](https://slack.cloudposse.com)
+# github-action-deploy-argocd [![Latest Release](https://img.shields.io/github/release/cloudposse/github-action-deploy-argocd.svg)](https://github.com/cloudposse/github-action-deploy-argocd/releases/latest) [![Slack Community](https://slack.cloudposse.com/badge.svg)](https://slack.cloudposse.com)
 <!-- markdownlint-restore -->
 
 [![README Header][readme_header_img]][readme_header_link]
@@ -28,7 +28,7 @@
 
 -->
 
-Deploy on Kubernetes with HelmFile
+Deploy on Kubernetes with ArgoCD
 
 ---
 
@@ -58,7 +58,7 @@ It's 100% Open Source and licensed under the [APACHE2](LICENSE).
 
 ## Introduction
 
-Deploy on Kubernetes with HelmFile. 
+Deploy on Kubernetes with Helm/HelmFile and ArgoCD. 
 
 
 
@@ -92,17 +92,22 @@ Deploy environment
             role-session-name: deploy
       
         - name: Deploy
-          uses: cloudposse/github-action-deploy-helmfile@main
+          uses: cloudposse/github-action-deploy-argocd@main
           id: deploy
           with:
-            aws-region: us-west-2
-            cluster: preview-eks
+            cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
+            toolchain: helmfile
             environment: preview
             namespace: preview
+            application: test-app
+            github-pat: ${{ secrets.GITHUB_AUTH_PAT }}
+            repository: ${{ github.repository }}
+            ref: ${{ github.event.pull_request.head.ref  }}
             image: nginx
             image-tag: latest
             operation: deploy
             debug: false
+            synchronously: true
   ```
 
 
@@ -129,10 +134,14 @@ Destroy environment
           uses: cloudposse/github-action-deploy-helmfile@main
           id: destroy
           with:
-            aws-region: us-west-2
-            cluster: preview-eks
+            cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
+            toolchain: helmfile
             environment: preview
             namespace: preview
+            application: test-app
+            github-pat: ${{ secrets.GITHUB_AUTH_PAT }}
+            repository: ${{ github.repository }}
+            ref: ${{ github.event.pull_request.head.ref }}  
             image: "<none>"
             image-tag: "<none>"
             operation: destroy
@@ -186,7 +195,7 @@ Destroy environment
 
 ## Share the Love
 
-Like this project? Please give it a ★ on [our GitHub](https://github.com/cloudposse/github-action-deploy-helmfile)! (it helps us **a lot**)
+Like this project? Please give it a ★ on [our GitHub](https://github.com/cloudposse/github-action-deploy-argocd)! (it helps us **a lot**)
 
 Are you using this project or any of our other projects? Consider [leaving a testimonial][testimonial]. =)
 
@@ -203,14 +212,13 @@ Check out these related projects.
 For additional context, refer to some of these links.
 
 - [github-actions-workflows](https://github.com/cloudposse/github-actions-workflows) - Reusable workflows for different types of projects
-- [example-github-action-release-workflow](https://github.com/cloudposse/example-github-action-release-workflow) - Example application with complicated release workflow
 
 
 ## Help
 
 **Got a question?** We got answers.
 
-File a GitHub [issue](https://github.com/cloudposse/github-action-deploy-helmfile/issues), send us an [email][email] or join our [Slack Community][slack].
+File a GitHub [issue](https://github.com/cloudposse/github-action-deploy-argocd/issues), send us an [email][email] or join our [Slack Community][slack].
 
 [![README Commercial Support][readme_commercial_support_img]][readme_commercial_support_link]
 
@@ -258,7 +266,7 @@ Sign up for [our newsletter][newsletter] that covers everything on our technolog
 
 ### Bug Reports & Feature Requests
 
-Please use the [issue tracker](https://github.com/cloudposse/github-action-deploy-helmfile/issues) to report any bugs or file feature requests.
+Please use the [issue tracker](https://github.com/cloudposse/github-action-deploy-argocd/issues) to report any bugs or file feature requests.
 
 ### Developing
 
@@ -346,33 +354,33 @@ Check out [our other projects][github], [follow us on twitter][twitter], [apply 
 [![Beacon][beacon]][website]
 <!-- markdownlint-disable -->
   [logo]: https://cloudposse.com/logo-300x69.svg
-  [docs]: https://cpco.io/docs?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=docs
-  [website]: https://cpco.io/homepage?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=website
-  [github]: https://cpco.io/github?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=github
-  [jobs]: https://cpco.io/jobs?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=jobs
-  [hire]: https://cpco.io/hire?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=hire
-  [slack]: https://cpco.io/slack?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=slack
-  [linkedin]: https://cpco.io/linkedin?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=linkedin
-  [twitter]: https://cpco.io/twitter?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=twitter
-  [testimonial]: https://cpco.io/leave-testimonial?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=testimonial
-  [office_hours]: https://cloudposse.com/office-hours?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=office_hours
-  [newsletter]: https://cpco.io/newsletter?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=newsletter
-  [discourse]: https://ask.sweetops.com/?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=discourse
-  [email]: https://cpco.io/email?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=email
-  [commercial_support]: https://cpco.io/commercial-support?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=commercial_support
-  [we_love_open_source]: https://cpco.io/we-love-open-source?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=we_love_open_source
-  [terraform_modules]: https://cpco.io/terraform-modules?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=terraform_modules
+  [docs]: https://cpco.io/docs?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=docs
+  [website]: https://cpco.io/homepage?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=website
+  [github]: https://cpco.io/github?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=github
+  [jobs]: https://cpco.io/jobs?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=jobs
+  [hire]: https://cpco.io/hire?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=hire
+  [slack]: https://cpco.io/slack?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=slack
+  [linkedin]: https://cpco.io/linkedin?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=linkedin
+  [twitter]: https://cpco.io/twitter?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=twitter
+  [testimonial]: https://cpco.io/leave-testimonial?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=testimonial
+  [office_hours]: https://cloudposse.com/office-hours?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=office_hours
+  [newsletter]: https://cpco.io/newsletter?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=newsletter
+  [discourse]: https://ask.sweetops.com/?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=discourse
+  [email]: https://cpco.io/email?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=email
+  [commercial_support]: https://cpco.io/commercial-support?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=commercial_support
+  [we_love_open_source]: https://cpco.io/we-love-open-source?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=we_love_open_source
+  [terraform_modules]: https://cpco.io/terraform-modules?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=terraform_modules
   [readme_header_img]: https://cloudposse.com/readme/header/img
-  [readme_header_link]: https://cloudposse.com/readme/header/link?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=readme_header_link
+  [readme_header_link]: https://cloudposse.com/readme/header/link?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=readme_header_link
   [readme_footer_img]: https://cloudposse.com/readme/footer/img
-  [readme_footer_link]: https://cloudposse.com/readme/footer/link?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=readme_footer_link
+  [readme_footer_link]: https://cloudposse.com/readme/footer/link?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=readme_footer_link
   [readme_commercial_support_img]: https://cloudposse.com/readme/commercial-support/img
-  [readme_commercial_support_link]: https://cloudposse.com/readme/commercial-support/link?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-helmfile&utm_content=readme_commercial_support_link
-  [share_twitter]: https://twitter.com/intent/tweet/?text=github-action-deploy-helmfile&url=https://github.com/cloudposse/github-action-deploy-helmfile
-  [share_linkedin]: https://www.linkedin.com/shareArticle?mini=true&title=github-action-deploy-helmfile&url=https://github.com/cloudposse/github-action-deploy-helmfile
-  [share_reddit]: https://reddit.com/submit/?url=https://github.com/cloudposse/github-action-deploy-helmfile
-  [share_facebook]: https://facebook.com/sharer/sharer.php?u=https://github.com/cloudposse/github-action-deploy-helmfile
-  [share_googleplus]: https://plus.google.com/share?url=https://github.com/cloudposse/github-action-deploy-helmfile
-  [share_email]: mailto:?subject=github-action-deploy-helmfile&body=https://github.com/cloudposse/github-action-deploy-helmfile
-  [beacon]: https://ga-beacon.cloudposse.com/UA-76589703-4/cloudposse/github-action-deploy-helmfile?pixel&cs=github&cm=readme&an=github-action-deploy-helmfile
+  [readme_commercial_support_link]: https://cloudposse.com/readme/commercial-support/link?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/github-action-deploy-argocd&utm_content=readme_commercial_support_link
+  [share_twitter]: https://twitter.com/intent/tweet/?text=github-action-deploy-argocd&url=https://github.com/cloudposse/github-action-deploy-argocd
+  [share_linkedin]: https://www.linkedin.com/shareArticle?mini=true&title=github-action-deploy-argocd&url=https://github.com/cloudposse/github-action-deploy-argocd
+  [share_reddit]: https://reddit.com/submit/?url=https://github.com/cloudposse/github-action-deploy-argocd
+  [share_facebook]: https://facebook.com/sharer/sharer.php?u=https://github.com/cloudposse/github-action-deploy-argocd
+  [share_googleplus]: https://plus.google.com/share?url=https://github.com/cloudposse/github-action-deploy-argocd
+  [share_email]: mailto:?subject=github-action-deploy-argocd&body=https://github.com/cloudposse/github-action-deploy-argocd
+  [beacon]: https://ga-beacon.cloudposse.com/UA-76589703-4/cloudposse/github-action-deploy-argocd?pixel&cs=github&cm=readme&an=github-action-deploy-argocd
 <!-- markdownlint-restore -->
