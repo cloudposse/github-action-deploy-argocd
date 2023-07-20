@@ -163,7 +163,6 @@ Destroy environment
 | aws-region | AWS region | us-east-1 | false |
 | check-retry-count | Check retry count (for synchronously mode) | 5 | false |
 | check-retry-interval | Check retry interval (in seconds) (for synchronously mode) | 10 | false |
-| check-timeout | Timeout check (in seconds) (for synchronously mode) | 600 | false |
 | cluster | Cluster name | N/A | true |
 | debug | Debug mode | false | false |
 | environment | Helmfile environment | preview | false |

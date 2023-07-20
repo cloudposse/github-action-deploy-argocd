@@ -70,10 +70,6 @@ inputs:
   synchronously:
     description: "Wait until ArgoCD successfully apply the changes"
     default: 'false'
-  check-timeout:
-    description: 'Timeout check (in seconds) (for synchronously mode)'
-    required: false
-    default: "600"
   check-retry-count:
     description: 'Check retry count (for synchronously mode)'
     required: false
@@ -298,7 +294,7 @@ runs:
           
           popd
 
-    - uses: cloudposse/github-action-wait-commit-status@0.1.0
+    - uses: cloudposse/github-action-wait-commit-status@0.2.0
       if: ${{ inputs.synchronously == 'true' && inputs.operation == 'deploy' }}
       with:
         repository: ${{ inputs.repository }}
@@ -306,6 +302,5 @@ runs:
         status: "continuous-delivery/${{ inputs.namespace }}.${{ inputs.application }}"
         expected_state: "success"
         token: ${{ inputs.github-pat }}
-        check-timeout: ${{ inputs.check-timeout }}
         check-retry-count: ${{ inputs.check-retry-count }}
         check-retry-interval: ${{ inputs.check-retry-interval }}      
