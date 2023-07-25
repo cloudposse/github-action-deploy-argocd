@@ -337,7 +337,7 @@ runs:
       with:
         repository: ${{ inputs.repository }}
         sha: ${{ inputs.ref }}
-        status: "continuous-delivery/${{ inputs.namespace }}.${{ inputs.application }}"
+        status: "continuous-delivery/${{ inputs.namespace }}.${{ inputs.app-name }}"
         expected_state: "success"
         token: ${{ inputs.github-pat }}
         check-retry-count: ${{ inputs.deployment-check-retry-count }}
