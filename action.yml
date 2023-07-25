@@ -73,6 +73,14 @@ inputs:
   synchronously:
     description: "Wait until ArgoCD successfully apply the changes"
     default: 'false'
+  deployment-check-retry-count:
+    description: 'Check retry count (for synchronously mode)'
+    required: false
+    default: "100"
+  deployment-check-retry-interval:
+    description: 'Check retry interval (in seconds) (for synchronously mode)'
+    required: false
+    default: "3"
 outputs:
   webapp-url:
     description: "Web Application url"
@@ -324,13 +332,13 @@ runs:
           
           popd
 
-    - uses: rafarlopes/wait-for-commit-status-action@v1
+    - uses: cloudposse/github-action-wait-commit-status@0.2.0
       if: ${{ inputs.synchronously == 'true' && inputs.operation == 'deploy' }}
-      env:
-        GITHUB_REPOSITORY: ${{ inputs.repository }}
-        GITHUB_TOKEN: ${{ inputs.github-pat }}
       with:
-        # Context for which we should look for the matching status
-        context: continuous-delivery/${{ inputs.namespace }}.${{ inputs.app-name }}
-        # The commit sha we should look for the status
+        repository: ${{ inputs.repository }}
         sha: ${{ inputs.ref }}
+        status: "continuous-delivery/${{ inputs.namespace }}.${{ inputs.application }}"
+        expected_state: "success"
+        token: ${{ inputs.github-pat }}
+        check-retry-count: ${{ inputs.deployment-check-retry-count }}
+        check-retry-interval: ${{ inputs.deployment-check-retry-interval }}     
