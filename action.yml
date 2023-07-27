@@ -43,6 +43,22 @@ inputs:
   namespace:
     description: Kubernetes namespace
     required: true
+  namespace-prefix:
+    description: Kubernetes namespace prefix
+    required: false
+    default: ''
+  namespace-suffix:
+    description: Kubernetes namespace suffix
+    required: false
+    default: ''
+  namespace-flavor:
+    description: Kubernetes namespace flavor
+    required: false
+    default: branch-name
+  namespace-deny-list:
+    description: Kubernetes namespace deny list, generated names cannot contain this comma separated list.
+    required: false
+    default: kube-system,kube-public,default
   application:
     description: Application name
     required: true
@@ -113,13 +129,23 @@ runs:
       run: |-
         echo "name=$(echo $RANDOM | md5sum | head -c 20)" >> $GITHUB_OUTPUT
 
+    - name: Sanitize Namespace
+      uses: cloudposse/kubernetes-namespace-builder-composite-action@main
+      id: namespace
+      with:
+        flavor: ${{ inputs.namespace-flavor }}
+        app-name: ${{ inputs.application }}
+        prefix: ${{ inputs.namespace-prefix }}
+        suffix: ${{ inputs.namespace-suffix }}
+        deny-list: ${{ inputs.namespace-deny-list }}
+    
     - name: Config
       id: config
       uses: cloudposse/github-action-yaml-config-query@0.1.3
       with:
         config: |-
-          tmp: ./tmp/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}
-          path: ${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}
+          tmp: ./tmp/${{ steps.destination.outputs.filepath }}/${{ steps.namespace.outputs.kubernetes-namespace }}/${{ inputs.application }}
+          path: ${{ steps.destination.outputs.filepath }}/${{ steps.namespace.outputs.kubernetes-namespace }}/${{ inputs.application }}
 
     - name: Checkout Argo Configuration
       uses: actions/checkout@v3
@@ -180,7 +206,7 @@ runs:
       if: ${{ inputs.toolchain == 'helmfile' && inputs.operation == 'deploy' }}
       shell: bash
       run: |
-        helmfile --namespace ${{ inputs.namespace }} \
+        helmfile --namespace ${{ steps.namespace.outputs.kubernetes-namespace }} \
           --environment ${{ inputs.environment }} \
           --file ${{ inputs.path}} \
           --state-values-file $(pwd)/platform.yaml \
@@ -200,7 +226,7 @@ runs:
           --set image.tag=${{ inputs.image-tag }} \
           --set environment=${{ inputs.environment }} \
           --create-namespace=true \
-          --namespace ${{ inputs.namespace }} \
+          --namespace ${{ steps.namespace.outputs.kubernetes-namespace }} \
           --set ingress.default.hosts.example=test \
           --values $(pwd)/platform.yaml \
           --values "${{ inputs.values_file }}" \
@@ -299,7 +325,7 @@ runs:
       with:
         repository: ${{ inputs.repository }}
         sha: ${{ inputs.ref }}
-        status: "continuous-delivery/${{ inputs.namespace }}.${{ inputs.application }}"
+        status: "continuous-delivery/${{ steps.namespace.outputs.kubernetes-namespace }}.${{ inputs.application }}"
         expected_state: "success"
         token: ${{ inputs.github-pat }}
         check-retry-count: ${{ inputs.check-retry-count }}
