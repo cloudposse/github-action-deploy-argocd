@@ -209,6 +209,18 @@ runs:
       shell: bash
       run: echo "HELM_DEBUG_FLAG=--debug" >> $GITHUB_ENV
 
+    - name: Deplicated Ref
+      if: ${{ inputs.operation == 'deploy' }}
+      id: ref
+      uses: cloudposse/github-action-yaml-config-query@0.1.3
+      with:
+        query: .${{ inputs.gitref-sha == '' }}
+        config: |-
+          true: 
+            value: ${{ inputs.ref }}
+          false:
+            value: ${{ inputs.gitref-sha }}
+          
     - name: Helmfile render
       if: ${{ inputs.toolchain == 'helmfile' && inputs.operation == 'deploy' }}
       shell: bash
@@ -222,22 +234,12 @@ runs:
           --state-values-file "${{ inputs.helm-values-file }}" \
           template \
           --args="${{ steps.arguments.outputs.kube_version }}" \
+          --set github.ref=${{ steps.ref.outputs.value }} \
+          --set github.repository=${{ inputs.repository }} \
           > ${{ steps.config.outputs.tmp }}/manifests/resources.yaml
       env:
         IMAGE_NAME: ${{ inputs.image }}
         IMAGE_TAG: ${{ inputs.image-tag }}
-
-    - name: Deplicated Ref
-      if: ${{ inputs.operation == 'deploy' }}
-      id: ref
-      uses: cloudposse/github-action-yaml-config-query@0.1.3
-      with:
-        query: .${{ inputs.gitref-sha == '' }}
-        config: |-
-          true: 
-            value: ${{ inputs.ref }}
-          false:
-            value: ${{ inputs.gitref-sha }}      
 
     - name: Helm raw render
       if: ${{ inputs.toolchain == 'helm' && inputs.operation == 'deploy' }}
