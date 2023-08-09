@@ -227,6 +227,18 @@ runs:
         IMAGE_NAME: ${{ inputs.image }}
         IMAGE_TAG: ${{ inputs.image-tag }}
 
+    - name: Deplicated Ref
+      if: ${{ inputs.operation == 'deploy' }}
+      id: ref
+      uses: cloudposse/github-action-yaml-config-query@0.1.3
+      with:
+        query: .${{ inputs.gitref-sha == '' }}
+        config: |-
+          true: 
+            value: ${{ inputs.ref }}
+          false:
+            value: ${{ inputs.gitref-sha }}      
+
     - name: Helm raw render
       if: ${{ inputs.toolchain == 'helm' && inputs.operation == 'deploy' }}
       shell: bash
@@ -239,6 +251,8 @@ runs:
           --namespace ${{ inputs.namespace }} \
           ${{ env.HELM_DEBUG_FLAG }} \
           --set ingress.default.hosts.example=test \
+          --set github.ref=${{ steps.ref.outputs.value }} \
+          --set github.repository=${{ inputs.repository }} \
           --values $(pwd)/service.yaml \
           --values $(pwd)/platform.yaml \
           --values "${{ inputs.helm-values-file }}" \
@@ -258,18 +272,6 @@ runs:
             ${{ steps.config.outputs.tmp }}/manifests/resources.yaml \
         )
         echo "webapp_url=${WEBAPP_URL}" >> $GITHUB_OUTPUT
-
-    - name: Deplicated Ref
-      if: ${{ inputs.operation == 'deploy' }}
-      id: ref
-      uses: cloudposse/github-action-yaml-config-query@0.1.3
-      with:
-        query: .${{ inputs.gitref-sha == '' }}
-        config: |-
-          true: 
-            value: ${{ inputs.ref }}
-          false:
-            value: ${{ inputs.gitref-sha }}      
 
     - name: Config render
       if: ${{ inputs.operation == 'deploy' }}
