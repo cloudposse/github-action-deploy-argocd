@@ -103,10 +103,20 @@ runs:
         helm-version: v3.10.2
         install-kubectl: false
 
-    - id: destination
+    - name: Parse git URL for 
+      id: destination
       uses: theowenyoung/git-url-parse@v1
       with:
         url: ${{ inputs.cluster }}
+
+    - name: echo output for debugging
+      shell: bash
+      run: |
+        echo "cluster: ${{ inputs.cluster }}"
+        echo "filepath: ${{ steps.destination.outputs.filepath }}"
+        echo "name: ${{ steps.destination.outputs.name }}"
+        echo "ref: ${{ steps.destination.outputs.ref }}"
+        echo "owner: ${{ steps.destination.outputs.owner }}"
 
     - id: destination_dir
       shell: bash
