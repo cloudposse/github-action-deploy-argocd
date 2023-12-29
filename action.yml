@@ -144,6 +144,8 @@ runs:
         echo "ref: ${{ steps.destination.outputs.ref }}"
         echo "owner: ${{ steps.destination.outputs.owner }}"
 
+        exit 1
+
     #"cluster: https://github.com/cloudposse/argocd-deploy-non-prod/blob/main/plat/ue2-dev/apps"
     #"filepath: plat/ue2-dev/apps"
     #"name: argocd-deploy-non-prod"
