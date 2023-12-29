@@ -103,18 +103,12 @@ runs:
         helm-version: v3.10.2
         install-kubectl: false
 
-    #- name: Parse git URL for 
-    #  id: destination
-    #  uses: theowenyoung/git-url-parse@v1
-    #  with:
-    #    url: ${{ inputs.cluster }}
-
-    - name: Install requirements
+    - name: Install git-url-parse
       shell: bash
       run: npm install git-url-parse
 
     - name: Parse git URL for destination
-      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea #v7.0.1, node20
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea #v7.0.1, node 20
       id: destination
       with:
         script: |
@@ -136,23 +130,6 @@ runs:
             }
           }
           run("${{ inputs.cluster }}")
-
-    - name: echo output for debugging
-      shell: bash
-      run: |
-        echo "cluster: ${{ inputs.cluster }}"
-        echo "filepath: ${{ steps.destination.outputs.filepath }}"
-        echo "name: ${{ steps.destination.outputs.name }}"
-        echo "ref: ${{ steps.destination.outputs.ref }}"
-        echo "owner: ${{ steps.destination.outputs.owner }}"
-
-        exit 1
-
-    #"cluster: https://github.com/cloudposse/argocd-deploy-non-prod/blob/main/plat/ue2-dev/apps"
-    #"filepath: plat/ue2-dev/apps"
-    #"name: argocd-deploy-non-prod"
-    #"ref: main"
-    #"owner: cloudposse"
 
     - id: destination_dir
       shell: bash
