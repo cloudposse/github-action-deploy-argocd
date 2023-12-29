@@ -103,11 +103,37 @@ runs:
         helm-version: v3.10.2
         install-kubectl: false
 
-    - name: Parse git URL for 
+    #- name: Parse git URL for 
+    #  id: destination
+    #  uses: theowenyoung/git-url-parse@v1
+    #  with:
+    #    url: ${{ inputs.cluster }}
+
+    - run: npm install git-url-parse
+    - name: Parse git URL for destination
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea #v7.0.1, node20
       id: destination
-      uses: theowenyoung/git-url-parse@v1
       with:
-        url: ${{ inputs.cluster }}
+        result-encoding: string
+        script: |
+          const GitUrlParse = require("git-url-parse");
+          async function run(url) {
+            try { 
+              console.log("url: %s", url)
+              const urlObj = GitUrlParse(url);
+              core.setOutput('result', JSON.stringify(urlObj));
+              const keys = Object.keys(urlObj);
+              keys.forEach(key=>{
+                if(typeof urlObj[key] === 'string' || urlObj[key] === null){
+                  core.setOutput(key, urlObj[key]);
+                }
+              })
+            } 
+            catch (error) {
+              core.setFailed(error.message);
+            }
+          }
+          run(${{ inputs.cluster }})
 
     - name: echo output for debugging
       shell: bash
@@ -117,6 +143,12 @@ runs:
         echo "name: ${{ steps.destination.outputs.name }}"
         echo "ref: ${{ steps.destination.outputs.ref }}"
         echo "owner: ${{ steps.destination.outputs.owner }}"
+
+    #"cluster: https://github.com/cloudposse/argocd-deploy-non-prod/blob/main/plat/ue2-dev/apps"
+    #"filepath: plat/ue2-dev/apps"
+    #"name: argocd-deploy-non-prod"
+    #"ref: main"
+    #"owner: cloudposse"
 
     - id: destination_dir
       shell: bash
