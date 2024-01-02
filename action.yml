@@ -113,7 +113,7 @@ runs:
       with:
         script: |
           const GitUrlParse = require("git-url-parse");
-          async function run(url) {
+          function run(url) {
             try { 
               console.log("url: %s", url)
               const urlObj = GitUrlParse(url);
