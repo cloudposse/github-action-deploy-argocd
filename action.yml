@@ -103,10 +103,33 @@ runs:
         helm-version: v3.10.2
         install-kubectl: false
 
-    - id: destination
-      uses: theowenyoung/git-url-parse@v1
+    - name: Install git-url-parse
+      shell: bash
+      run: npm install git-url-parse@14.0.0
+
+    - name: Parse git URL for destination
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea #v7.0.1, node 20
+      id: destination
       with:
-        url: ${{ inputs.cluster }}
+        script: |
+          const GitUrlParse = require("git-url-parse");
+          function run(url) {
+            try { 
+              console.log("url: %s", url)
+              const urlObj = GitUrlParse(url);
+              core.setOutput('result', JSON.stringify(urlObj));
+              const keys = Object.keys(urlObj);
+              keys.forEach(key=>{
+                if(typeof urlObj[key] === 'string' || urlObj[key] === null){
+                  core.setOutput(key, urlObj[key]);
+                }
+              })
+            } 
+            catch (error) {
+              core.setFailed(error.message);
+            }
+          }
+          run("${{ inputs.cluster }}")
 
     - id: destination_dir
       shell: bash
