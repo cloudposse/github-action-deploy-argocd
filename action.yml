@@ -103,6 +103,11 @@ runs:
         helm-version: v3.10.2
         install-kubectl: false
 
+    - name: Setup node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
     - name: Install git-url-parse
       shell: bash
       run: npm install git-url-parse@14.0.0
