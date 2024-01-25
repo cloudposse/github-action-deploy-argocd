@@ -325,7 +325,8 @@ runs:
     - uses: cloudposse/github-action-wait-commit-status@0.2.0
       if: ${{ inputs.synchronously == 'true' && inputs.operation == 'deploy' }}
       with:
-        repository: ${{ inputs.repository }}
+        #repository: ${{ inputs.repository }}
+        repository: ${{ steps.destination.outputs.ref }}
         sha: ${{ inputs.ref }}
         status: "continuous-delivery/${{ inputs.namespace }}.${{ inputs.application }}"
         expected_state: "success"
