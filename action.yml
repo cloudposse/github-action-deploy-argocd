@@ -65,8 +65,12 @@ inputs:
     default: "release"
     required: false
   github-pat:
-    description: Github PAT to access argocd configuration repository
+    description: Github PAT for access app configuration repository and (if argocd-deploy-repo-pat is not given) the argocd configuration repository.
     required: true
+  argocd-deploy-repo-pat:
+    description: Github PAT to access argocd configuration repository. If not specified, github-pat will be used instead.
+    required: false
+    default: ''
   synchronously:
     description: "Wait until ArgoCD successfully apply the changes"
     default: 'false'
@@ -154,7 +158,7 @@ runs:
       with:
         repository: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
         ref: ${{ steps.destination.outputs.ref }}
-        token: ${{ inputs.github-pat }}
+        token: ${{ inputs.argocd-deploy-repo-pat != '' && inputs.argocd-deploy-repo-pat || inputs.github-pat }} # If argocd-deploy-repo-pat is not given, use github-pat
         path: ${{ steps.destination_dir.outputs.name }}
 
     - name: Read platform context
