@@ -326,7 +326,7 @@ runs:
       if: ${{ inputs.synchronously == 'true' && inputs.operation == 'deploy' }}
       with:
         #repository: ${{ inputs.repository }}
-        repository: ${{ steps.destination.outputs.ref }}
+        repository: ${{ steps.destination.outputs.full_name }} # Organization/repo
         sha: ${{ inputs.ref }}
         status: "continuous-delivery/${{ inputs.namespace }}.${{ inputs.application }}"
         expected_state: "success"
