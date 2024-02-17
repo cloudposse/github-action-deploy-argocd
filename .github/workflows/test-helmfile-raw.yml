@@ -40,7 +40,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: ./action
 
@@ -104,7 +104,7 @@ jobs:
     needs: [setup]
     steps:
       - name: Checkout Argo Configuration
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: cloudposse/argocd-deploy-non-prod-test
           token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
@@ -182,7 +182,7 @@ jobs:
           comparison: notEqual
 
       - name: Checkout Argo Configuration
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: cloudposse/argocd-deploy-non-prod-test
           ref: ${{ needs.test.outputs.sha }}
