@@ -57,7 +57,7 @@ inputs:
     default: 'false'
     required: false
   values_file:
-    description: Helmfile values file
+    description: Helm values file, this can be a single file or a comma separated list of files
     default: ""
     required: false
   release_label_name:
@@ -195,6 +195,9 @@ runs:
       if: ${{ inputs.toolchain == 'helm' && inputs.operation == 'deploy' }}
       shell: bash
       run: |
+        IFS=', ' read -r -a array <<< "${{ inputs.values_file }}"
+        for element in ${array[@]}; do VALUES_STR+="--values $element "; done
+        
         helm template ${{ inputs.application }} ${{ inputs.path }} \
           --set image.repository=${{ inputs.image }} \
           --set image.tag=${{ inputs.image-tag }} \
@@ -203,7 +206,7 @@ runs:
           --namespace ${{ inputs.namespace }} \
           --set ingress.default.hosts.example=test \
           --values $(pwd)/platform.yaml \
-          --values "${{ inputs.values_file }}" \
+          ${VALUES_STR} \
           ${{ steps.arguments.outputs.kube_version }} \
         > ${{ steps.config.outputs.tmp }}/manifests/resources.yaml
       env:
