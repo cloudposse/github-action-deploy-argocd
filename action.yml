@@ -158,7 +158,7 @@ runs:
         path: ${{ steps.destination_dir.outputs.name }}
 
     - name: Read platform context
-      uses: docker://public.ecr.aws/u3q6g8t1/chamber:2.10.12
+      uses: docker://segment/chamber:2.14.1
       if: ${{ inputs.operation == 'deploy' }}
       with:
         args: --verbose export ${{ inputs.ssm-path }}/${{ inputs.environment }} --format yaml --output-file ./platform.yaml
@@ -171,7 +171,7 @@ runs:
         yq --exit-status --no-colors --inplace eval '{"platform": .}' ./platform.yaml
 
     - name: Read platform metadata
-      uses: docker://public.ecr.aws/u3q6g8t1/chamber:2.10.12
+      uses: docker://segment/chamber:2.14.1
       if: ${{ inputs.operation == 'deploy' }}
       with:
         args: --verbose export ${{ inputs.ssm-path }}/_metadata --format yaml --output-file ./_metadata.yaml
