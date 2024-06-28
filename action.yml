@@ -78,6 +78,18 @@ inputs:
     description: 'Check retry interval (in seconds) (for synchronously mode)'
     required: false
     default: "10"
+  commit-retry-count:
+    description: 'Commit retry count'
+    required: false
+    default: "4"
+  commit-retry-interval:
+    description: 'Commit retry interval (in seconds)'
+    required: false
+    default: "10"
+  commit-timeout:
+    description: 'Commit timeout (in seconds)'
+    required: false
+    default: "60"
 outputs:
   webapp-url:
     description: "Web Application url"
@@ -282,8 +294,9 @@ runs:
       uses: nick-fields/retry@v2
       id: git
       with:
-        timeout_minutes: 1
-        max_attempts: 4
+        max_attempts: ${{ inputs.commit-retry-count }}
+        timeout_seconds: ${{ inputs.commit-timeout }}
+        retry_wait_seconds: ${{ inputs.commit-retry-interval }}
         shell: bash
         command: |-
           set -e
