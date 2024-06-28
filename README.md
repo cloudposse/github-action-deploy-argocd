@@ -137,6 +137,9 @@ Destroy environment
 | check-retry-count | Check retry count (for synchronously mode) | 5 | false |
 | check-retry-interval | Check retry interval (in seconds) (for synchronously mode) | 10 | false |
 | cluster | Cluster name | N/A | true |
+| commit-retry-count | Commit retry count | 4 | false |
+| commit-retry-interval | Commit retry interval (in seconds) | 10 | false |
+| commit-timeout | Commit timeout (in seconds) | 60 | false |
 | debug | Debug mode | false | false |
 | environment | Helmfile environment | preview | false |
 | github-pat | Github PAT to access argocd configuration repository | N/A | true |
