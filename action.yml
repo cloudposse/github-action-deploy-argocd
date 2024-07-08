@@ -173,11 +173,21 @@ runs:
         token: ${{ inputs.github-pat }}
         path: ${{ steps.destination_dir.outputs.name }}
 
-    - name: Read platform context
-      uses: docker://segment/chamber:2.14.1
+    - name: Setup chamber
       if: ${{ inputs.operation == 'deploy' }}
-      with:
-        args: --verbose export ${{ inputs.ssm-path }}/${{ inputs.environment }} --format yaml --output-file ./platform.yaml
+      shell: bash
+      env:
+        version: v2.14.1
+      run: |
+        os=$(echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]')
+        arch=$(echo ${{ runner.arch }} | tr '[:upper:]' '[:lower:]')
+        curl -LOs https://github.com/segmentio/chamber/releases/download/${version}/chamber-${version}-${os}-${arch}
+
+    - name: Read platform context
+      if: ${{ inputs.operation == 'deploy' }}
+      shell: bash
+      run: |
+        chamber --verbose export ${{ inputs.ssm-path }}/${{ inputs.environment }} --format yaml --output-file ./platform.yaml
 
     - name: YQ Platform settings
       if: ${{ inputs.operation == 'deploy' }}
@@ -187,10 +197,10 @@ runs:
         yq --exit-status --no-colors --inplace eval '{"platform": .}' ./platform.yaml
 
     - name: Read platform metadata
-      uses: docker://segment/chamber:2.14.1
       if: ${{ inputs.operation == 'deploy' }}
-      with:
-        args: --verbose export ${{ inputs.ssm-path }}/_metadata --format yaml --output-file ./_metadata.yaml
+      shell: bash
+      run: |
+        chamber --verbose export ${{ inputs.ssm-path }}/_metadata --format yaml --output-file ./_metadata.yaml
 
     - name: YQ Platform settings
       if: ${{ inputs.operation == 'deploy' }}
