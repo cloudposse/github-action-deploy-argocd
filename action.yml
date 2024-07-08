@@ -181,8 +181,8 @@ runs:
       run: |
         os=$(echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]')
         arch=$(echo ${{ runner.arch }} | tr '[:upper:]' '[:lower:]')
-        curl -LOs https://github.com/segmentio/chamber/releases/download/${version}/chamber-${version}-${os}-${arch} -o /tmp/chamber
-        install /tmp/chamber /usr/local/bin/chamber
+        curl -LOs https://github.com/segmentio/chamber/releases/download/${version}/chamber-${version}-${os}-${arch}
+        install chamber-${version}-${os}-${arch} /usr/local/bin/chamber
 
     - name: Read platform context
       if: ${{ inputs.operation == 'deploy' }}
