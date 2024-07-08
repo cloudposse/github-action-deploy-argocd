@@ -181,7 +181,22 @@ runs:
       run: |
         set -x
         os=$(uname -s | tr '[:upper:]' '[:lower:]')
-        arch=$(arch)
+        arch=""
+        case $(uname -m) in
+          x86_64)
+            arch="amd64"
+            ;;
+          aarch64)
+            arch="arm64"
+            ;;
+          arch64)
+            arch="arm64"
+            ;;
+          *)
+            echo "Unsupported architecture $(uname -m)"
+            exit 1
+            ;;
+        esac
         curl -LOs https://github.com/segmentio/chamber/releases/download/${version}/chamber-${version}-${os}-${arch}
         install chamber-${version}-${os}-${arch} /usr/local/bin/chamber
 
