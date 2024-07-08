@@ -269,7 +269,7 @@ runs:
       shell: bash
       run: |-
         WEBAPP_URL=$( \
-          yq eval-all '.metadata.annotations["outputs.platform.cloudposse.com/webapp-url"] | select(. != null)' \
+          yq -N eval-all '[.metadata.annotations["outputs.platform.cloudposse.com/webapp-url"] | select(. != null)] | .[0]' \
             ${{ steps.config.outputs.tmp }}/manifests/resources.yaml \
         )
         echo "webapp_url=${WEBAPP_URL}" >> $GITHUB_OUTPUT
