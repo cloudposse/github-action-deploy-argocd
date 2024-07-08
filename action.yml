@@ -181,7 +181,7 @@ runs:
       run: |
         set -x
         os=$(uname -s | tr '[:upper:]' '[:lower:]')
-        arch=$(uname -m | tr '[:upper:]' '[:lower:]')
+        arch=$(arch)
         curl -LOs https://github.com/segmentio/chamber/releases/download/${version}/chamber-${version}-${os}-${arch}
         install chamber-${version}-${os}-${arch} /usr/local/bin/chamber
 
