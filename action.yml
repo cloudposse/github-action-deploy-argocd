@@ -238,7 +238,7 @@ runs:
         IFS=', ' read -r -a array <<< "${{ inputs.values_file }}"
         for element in ${array[@]}; do VALUES_STR+="--values $element "; done
 
-        helm dependency build
+        helm dependency build ${{ inputs.path }}
         
         helm template ${{ inputs.application }} ${{ inputs.path }} \
           --set image.repository=${{ inputs.image }} \
