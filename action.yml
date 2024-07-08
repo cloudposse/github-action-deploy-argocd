@@ -180,8 +180,8 @@ runs:
         version: v2.14.1
       run: |
         set -x
-        os=$(echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]')
-        arch=$(echo ${{ runner.arch }} | tr '[:upper:]' '[:lower:]')
+        os=$(uname -s | tr '[:upper:]' '[:lower:]')
+        arch=$(uname -m | tr '[:upper:]' '[:lower:]')
         curl -LOs https://github.com/segmentio/chamber/releases/download/${version}/chamber-${version}-${os}-${arch}
         install chamber-${version}-${os}-${arch} /usr/local/bin/chamber
 
