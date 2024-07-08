@@ -90,6 +90,10 @@ inputs:
     description: 'Commit timeout (in seconds)'
     required: false
     default: "60"
+  helm-dependency-build:
+    description: 'Run helm dependency build, only for helm toolchain, `true` or `false`'
+    required: false
+    default: "false"
 outputs:
   webapp-url:
     description: "Web Application url"
@@ -230,15 +234,19 @@ runs:
       env:
         IMAGE_NAME: ${{ inputs.image }}
         IMAGE_TAG: ${{ inputs.image-tag }}
-
+        
+    - name: Build Helm Dependencies
+      if: ${{ inputs.toolchain == 'helm' && inputs.operation == 'deploy' && inputs.helm-dependency-build == 'true'}}
+      shell: bash
+      run: |
+        helm dependency build ${{ inputs.path }}
+        
     - name: Helm raw render
       if: ${{ inputs.toolchain == 'helm' && inputs.operation == 'deploy' }}
       shell: bash
       run: |
         IFS=', ' read -r -a array <<< "${{ inputs.values_file }}"
         for element in ${array[@]}; do VALUES_STR+="--values $element "; done
-
-        helm dependency build ${{ inputs.path }}
         
         helm template ${{ inputs.application }} ${{ inputs.path }} \
           --set image.repository=${{ inputs.image }} \
