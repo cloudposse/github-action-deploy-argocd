@@ -179,6 +179,7 @@ runs:
       env:
         version: v2.14.1
       run: |
+        set -x
         os=$(echo ${{ runner.os }} | tr '[:upper:]' '[:lower:]')
         arch=$(echo ${{ runner.arch }} | tr '[:upper:]' '[:lower:]')
         curl -LOs https://github.com/segmentio/chamber/releases/download/${version}/chamber-${version}-${os}-${arch}
