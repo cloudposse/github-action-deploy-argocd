@@ -82,8 +82,8 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
           ## Use localhost to connect localstack because the commands runs not in a container
           AWS_ENDPOINT_OVERRIDE: http://localhost:4566
-          ## Use localstack to connect localstack because the chamber runs in a container
-          CHAMBER_AWS_SSM_ENDPOINT: http://localstack:4566/
+          ## Use localhost to connect localstack because chamber does not run in a container
+          CHAMBER_AWS_SSM_ENDPOINT: http://localhost:4566/
 
     outputs:
       status: ${{ steps.current.outcome }}
