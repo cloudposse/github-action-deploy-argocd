@@ -198,7 +198,7 @@ runs:
             ;;
         esac
         curl -LOs https://github.com/segmentio/chamber/releases/download/${version}/chamber-${version}-${os}-${arch}
-        install chamber-${version}-${os}-${arch} /usr/local/bin/chamber
+        sudo install chamber-${version}-${os}-${arch} /usr/local/bin/chamber
 
     - name: Read platform context
       if: ${{ inputs.operation == 'deploy' }}
