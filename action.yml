@@ -94,6 +94,10 @@ inputs:
     description: 'Run helm dependency build, only for helm toolchain, `true` or `false`'
     required: false
     default: "false"
+  helm-args:
+    description: 'Additional helm arguments'
+    required: false
+    default: ""
 outputs:
   webapp-url:
     description: "Web Application url"
@@ -277,13 +281,16 @@ runs:
         
         helm template ${{ inputs.application }} ${{ inputs.path }} \
           --set image.repository=${{ inputs.image }} \
+          --set global.image.repository=${{ inputs.image }} \
           --set image.tag=${{ inputs.image-tag }} \
+          --set global.image.tag=${{ inputs.image-tag }} \
           --set environment=${{ inputs.environment }} \
           --create-namespace=true \
           --namespace ${{ inputs.namespace }} \
           --set ingress.default.hosts.example=test \
           --values $(pwd)/platform.yaml \
           ${VALUES_STR} \
+          ${{ inputs.helm-args }} \
           ${{ steps.arguments.outputs.kube_version }} \
         > ${{ steps.config.outputs.tmp }}/manifests/resources.yaml
       env:
