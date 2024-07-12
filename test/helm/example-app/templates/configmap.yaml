@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test
+data:
+  {{ with .Values.foo -}}
+  foo: '{{ . }}'
+  {{- end }}
+  {{ with .Values.bar -}}
+  bar: '{{ . }}'
+  {{- end }}
