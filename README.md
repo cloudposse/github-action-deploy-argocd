@@ -144,6 +144,7 @@ Destroy environment
 | environment | Helmfile environment | preview | false |
 | github-pat | Github PAT to access argocd configuration repository | N/A | true |
 | gitref-sha | Git SHA (Depricated. Use `ref` instead) |  | false |
+| helm-args | Additional helm arguments |  | false |
 | helm-dependency-build | Run helm dependency build, only for helm toolchain, `true` or `false` | false | false |
 | image | Docker image | N/A | true |
 | image-tag | Docker image tag | N/A | true |
