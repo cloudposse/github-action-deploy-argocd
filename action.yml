@@ -335,7 +335,7 @@ runs:
           manifests: ${{ steps.config.outputs.path }}/manifests
 
     - name: Push to Github
-      uses: nick-fields/retry@v2
+      uses: nick-fields/retry@v3
       id: git
       with:
         max_attempts: ${{ inputs.commit-retry-count }}
