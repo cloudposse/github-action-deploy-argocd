@@ -163,7 +163,7 @@ runs:
 
     - name: Config
       id: config
-      uses: cloudposse/github-action-yaml-config-query@0.1.3
+      uses: cloudposse/github-action-yaml-config-query@0.1.4
       with:
         config: |-
           tmp: ./tmp/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}
@@ -235,7 +235,7 @@ runs:
     - name: Context
       if: ${{ inputs.operation == 'deploy' }}
       id: arguments
-      uses: cloudposse/github-action-yaml-config-query@0.1.3
+      uses: cloudposse/github-action-yaml-config-query@0.1.4
       with:
         query: .${{ steps.metadata.outputs.kube_version == '' }}
         config: |-
@@ -311,7 +311,7 @@ runs:
     - name: Deplicated Ref
       if: ${{ inputs.operation == 'deploy' }}
       id: ref
-      uses: cloudposse/github-action-yaml-config-query@0.1.3
+      uses: cloudposse/github-action-yaml-config-query@0.1.4
       with:
         query: .${{ inputs.gitref-sha == '' }}
         config: |-
