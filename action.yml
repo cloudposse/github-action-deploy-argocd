@@ -322,7 +322,7 @@ runs:
 
     - name: Config render
       if: ${{ inputs.operation == 'deploy' }}
-      uses: 1arp/create-a-file-action@0.2
+      uses: 1arp/create-a-file-action@0.4
       with:
         path: ${{ steps.config.outputs.tmp }}
         file: config.yaml
