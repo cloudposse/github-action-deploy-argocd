@@ -98,6 +98,10 @@ inputs:
     description: 'Additional helm arguments'
     required: false
     default: ""
+  extra-env-vars:
+    description: 'A JSON string of additional environment variables'
+    required: false
+    default: ""
 outputs:
   webapp-url:
     description: "Web Application url"
@@ -244,6 +248,12 @@ runs:
           false:
             kube_version: --kube-version=${{ steps.metadata.outputs.kube_version }}      
 
+    - name: Extra env vars
+      if: ${{ inputs.extra-env-vars != '' }}
+      shell: bash
+      run: |
+        echo '${{ inputs.extra-env-vars }}' > env.json
+        cat env.json | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' >> $GITHUB_ENV
 
     - name: Ensure argocd repo structure
       if: ${{ inputs.operation == 'deploy' }}
