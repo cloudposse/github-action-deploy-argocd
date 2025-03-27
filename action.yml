@@ -67,8 +67,8 @@ inputs:
   github-pat:
     description: Github PAT to access argocd configuration repository
     required: true
-  commit-status-github-pat:
-    description: Github PAT to access the app repository. Defaults to github-pat if not set.
+  commit-status-github-token:
+    description: Github token to access the app repository. Defaults to github-pat if not set.
     required: false
   synchronously:
     description: "Wait until ArgoCD successfully apply the changes"
@@ -390,10 +390,10 @@ runs:
       id: commit_status_github_token
       if: ${{ inputs.synchronously == 'true' && inputs.operation == 'deploy' }}
       command: |
-        if [ -z "${{ inputs.commit-status-github-pat }}" ]; then
+        if [ -z "${{ inputs.commit-status-github-token }}" ]; then
           echo "token=${{ inputs.github-pat }}" >> $GITHUB_OUTPUT
         else
-          echo "token=${{ inputs.commit-status-github-pat }}" >> $GITHUB_OUTPUT
+          echo "token=${{ inputs.commit-status-github-token }}" >> $GITHUB_OUTPUT
         fi
 
     - uses: cloudposse/github-action-wait-commit-status@0.2.0
