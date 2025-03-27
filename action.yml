@@ -386,10 +386,10 @@ runs:
           popd
 
     - name: Select GitHub Token for Sync Mode
-      shell: bash
       id: commit_status_github_token
       if: ${{ inputs.synchronously == 'true' && inputs.operation == 'deploy' }}
-      command: |
+      shell: bash
+      run: |-
         if [ -z "${{ inputs.commit-status-github-token }}" ]; then
           echo "token=${{ inputs.github-pat }}" >> $GITHUB_OUTPUT
         else
