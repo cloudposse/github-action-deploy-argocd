@@ -2,8 +2,11 @@
 
 <!-- markdownlint-disable -->
 <a href="https://cpco.io/homepage"><img src="https://github.com/cloudposse/github-action-deploy-argocd/blob/main/.github/banner.png?raw=true" alt="Project Banner"/></a><br/>
-    <p align="right">
-<a href="https://github.com/cloudposse/github-action-deploy-argocd/releases/latest"><img src="https://img.shields.io/github/release/cloudposse/github-action-deploy-argocd.svg" alt="Latest Release"/></a><a href="https://slack.cloudposse.com"><img src="https://slack.cloudposse.com/badge.svg" alt="Slack Community"/></a></p>
+
+
+<p align="right"><a href="https://github.com/cloudposse/github-action-deploy-argocd/releases/latest"><img src="https://img.shields.io/github/release/cloudposse/github-action-deploy-argocd.svg?style=for-the-badge" alt="Latest Release"/></a><a href="https://github.com/cloudposse/github-action-deploy-argocd/commits"><img src="https://img.shields.io/github/last-commit/cloudposse/github-action-deploy-argocd.svg?style=for-the-badge" alt="Last Updated"/></a><a href="https://cloudposse.com/slack"><img src="https://slack.cloudposse.com/for-the-badge.svg" alt="Slack Community"/></a>
+
+</p>
 <!-- markdownlint-restore -->
 
 <!--
@@ -126,48 +129,10 @@ Destroy environment
 
 
 
-<!-- markdownlint-disable -->
-
-## Inputs
-
-| Name | Description | Default | Required |
-|------|-------------|---------|----------|
-| application | Application name | N/A | true |
-| aws-region | AWS region | us-east-1 | false |
-| check-retry-count | Check retry count (for synchronously mode) | 5 | false |
-| check-retry-interval | Check retry interval (in seconds) (for synchronously mode) | 10 | false |
-| cluster | Cluster name | N/A | true |
-| commit-retry-count | Commit retry count | 4 | false |
-| commit-retry-interval | Commit retry interval (in seconds) | 10 | false |
-| commit-status-github-token | Github token to access the app repository. Defaults to github-pat if not set. | N/A | false |
-| commit-timeout | Commit timeout (in seconds) | 60 | false |
-| debug | Debug mode | false | false |
-| environment | Helmfile environment | preview | false |
-| github-pat | Github PAT to access argocd configuration repository | N/A | true |
-| gitref-sha | Git SHA (Depricated. Use `ref` instead) |  | false |
-| helm-args | Additional helm arguments |  | false |
-| helm-dependency-build | Run helm dependency build, only for helm toolchain, `true` or `false` | false | false |
-| image | Docker image | N/A | true |
-| image-tag | Docker image tag | N/A | true |
-| namespace | Kubernetes namespace | N/A | true |
-| operation | Operation with helmfiles. (valid options - `deploy`, `destroy`) | deploy | true |
-| path | The path where lives the helmfile or helm chart. | N/A | true |
-| ref | Git ref | N/A | true |
-| release\_label\_name | The name of the label used to describe the helm release | release | false |
-| repository | Application GitHub repository full name | N/A | true |
-| ssm-path | SSM path to read environment secrets | N/A | true |
-| synchronously | Wait until ArgoCD successfully apply the changes | false | false |
-| toolchain | Toolchain ('helm', 'helmfile') | helmfile | false |
-| values\_file | Helm values file, this can be a single file or a comma separated list of files |  | false |
 
 
-## Outputs
 
-| Name | Description |
-|------|-------------|
-| sha | Git commit SHA into argocd repo |
-| webapp-url | Web Application url |
-<!-- markdownlint-restore -->
+
 
 
 ## Related Projects
@@ -207,7 +172,36 @@ In general, PRs are welcome. We follow the typical "fork-and-pull" Git workflow.
  5. **Push** your work back up to your fork
  6. Submit a **Pull Request** so that we can review your changes
 
-**NOTE:** Be sure to merge the latest changes from "upstream" before making a pull request!
+**NOTE:** Be sure to merge the latest changes from "upstream" before making a pull request!## Running Terraform Tests
+
+We use [Atmos](https://atmos.tools) to streamline how Terraform tests are run. It centralizes configuration and wraps common test workflows with easy-to-use commands.
+
+All tests are located in the [`test/`](test) folder.
+
+Under the hood, tests are powered by Terratest together with our internal [Test Helpers](https://github.com/cloudposse/test-helpers) library, providing robust infrastructure validation.
+
+Setup dependencies:
+- Install Atmos ([installation guide](https://atmos.tools/install/))
+- Install Go [1.24+ or newer](https://go.dev/doc/install)
+- Install Terraform or OpenTofu
+
+To run tests:
+
+- Run all tests:  
+  ```sh
+  atmos test run
+  ```
+- Clean up test artifacts:  
+  ```sh
+  atmos test clean
+  ```
+- Explore additional test options:  
+  ```sh
+  atmos test --help
+  ```
+The configuration for test commands is centrally managed. To review what's being imported, see the [`atmos.yaml`](https://raw.githubusercontent.com/cloudposse/.github/refs/heads/main/.github/atmos/terraform-module.yaml) file.
+
+Learn more about our [automated testing in our documentation](https://docs.cloudposse.com/community/contribute/automated-testing/) or implementing [custom commands](https://atmos.tools/core-concepts/custom-commands/) with atmos.
 
 ### 🌎 Slack Community
 
