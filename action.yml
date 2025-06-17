@@ -101,6 +101,10 @@ inputs:
     description: 'Additional helm arguments'
     required: false
     default: ""
+  helmfile-args:
+    description: 'Additional helmfile arguments'
+    required: false
+    default: ""    
 outputs:
   webapp-url:
     description: "Web Application url"
@@ -264,6 +268,7 @@ runs:
           --state-values-file $(pwd)/platform.yaml \
           template \
           --args="${{ steps.arguments.outputs.kube_version }}" \
+          ${{ inputs.helmfile-args }} \          
           > ${{ steps.config.outputs.tmp }}/manifests/resources.yaml
       env:
         IMAGE_NAME: ${{ inputs.image }}
