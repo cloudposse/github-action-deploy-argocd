@@ -148,7 +148,9 @@ Destroy environment
 | gitref-sha | Git SHA (Depricated. Use `ref` instead) |  | false |
 | helm-args | Additional helm arguments |  | false |
 | helm-dependency-build | Run helm dependency build, only for helm toolchain, `true` or `false` | false | false |
+| helm-version | Helm version | v3.10.2 | false |
 | helmfile-args | Additional helmfile arguments |  | false |
+| helmfile-version | Helmfile version | v0.148.1 | false |
 | image | Docker image | N/A | true |
 | image-tag | Docker image tag | N/A | true |
 | namespace | Kubernetes namespace | N/A | true |
