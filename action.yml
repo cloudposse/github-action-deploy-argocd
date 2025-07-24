@@ -104,7 +104,15 @@ inputs:
   helmfile-args:
     description: 'Additional helmfile arguments'
     required: false
-    default: ""    
+    default: ""
+  helm-version:
+    description: "Helm version"
+    required: false
+    default: "v3.10.2"
+  helmfile-version:
+    description: "Helmfile version"
+    required: false
+    default: "v0.148.1"    
 outputs:
   webapp-url:
     description: "Web Application url"
@@ -126,8 +134,8 @@ runs:
       uses: mamezou-tech/setup-helmfile@v1.2.0
       if: ${{ inputs.operation == 'deploy' }}
       with:
-        helmfile-version: v0.148.1
-        helm-version: v3.10.2
+        helmfile-version: "${{ inputs.helmfile-version }}"
+        helm-version: "${{ inputs.helm-version }}"
         install-kubectl: false
 
     - name: Setup node
