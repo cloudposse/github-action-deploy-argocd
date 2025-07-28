@@ -133,7 +133,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [setup, test]
     steps:
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: ""
           actual: "${{ needs.test.outputs.sha }}"
@@ -148,7 +148,7 @@ jobs:
           type: file
           token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
 
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: "false"
           actual: "${{ steps.resources.outputs.exists }}"
