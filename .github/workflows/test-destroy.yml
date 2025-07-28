@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       localstack:
-        image: localstack/localstack:2.1.0
+        image: localstack/localstack:2.3.2
         ports:
           - 4566:4566
           - 4510-4559:4510-4559
@@ -65,7 +65,7 @@ jobs:
     needs: [setup]
     services:
       localstack:
-        image: localstack/localstack:2.1.0
+        image: localstack/localstack:2.3.2
         ports:
           - 4566:4566
           - 4510-4559:4510-4559
