@@ -131,7 +131,7 @@ runs:
         force: true
 
     - name: Setup helmfile
-      uses: mamezou-tech/setup-helmfile@v1.2.0
+      uses: mamezou-tech/setup-helmfile@v2.1.0
       if: ${{ inputs.operation == 'deploy' }}
       with:
         helmfile-version: "${{ inputs.helmfile-version }}"
