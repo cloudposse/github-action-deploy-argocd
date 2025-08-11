@@ -409,7 +409,7 @@ runs:
           echo "token=${{ inputs.commit-status-github-token }}" >> $GITHUB_OUTPUT
         fi
 
-    - uses: cloudposse/github-action-wait-commit-status@0.2.0
+    - uses: cloudposse/github-action-wait-commit-status@v0.2.1
       if: ${{ inputs.synchronously == 'true' && inputs.operation == 'deploy' }}
       with:
         repository: ${{ inputs.repository }}
