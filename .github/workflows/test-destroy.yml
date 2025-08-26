@@ -106,7 +106,7 @@ jobs:
       - uses: ./action
         id: current
         with:
-          cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
+          cluster: https://github.com/cloudposse-corp/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
           toolchain: helmfile
           environment: staging
           namespace: staging
@@ -142,7 +142,7 @@ jobs:
       - uses: jiangxin/file-exists-action@v1
         id: resources
         with:
-          repository: cloudposse/argocd-deploy-non-prod-test
+          repository: cloudposse-corp/argocd-deploy-non-prod-test
           ref: ${{ needs.test.outputs.sha }}
           path: plat/ue2-sandbox/apps/staging/test-app/manifests/resources.yaml
           type: file
