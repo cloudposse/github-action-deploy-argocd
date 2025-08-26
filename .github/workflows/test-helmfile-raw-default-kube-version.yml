@@ -64,7 +64,7 @@ jobs:
       - uses: ./action
         id: current
         with:
-          cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
+          cluster: https://github.com/cloudposse-corp/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
           toolchain: helmfile
           environment: staging
           namespace: staging
