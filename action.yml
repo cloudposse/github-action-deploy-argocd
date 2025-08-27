@@ -276,8 +276,7 @@ runs:
           --state-values-file $(pwd)/platform.yaml \
           template \
           --args="${{ steps.arguments.outputs.kube_version }}" \
-          ${{ inputs.helmfile-args }} \          
-          > ${{ steps.config.outputs.tmp }}/manifests/resources.yaml
+          ${{ inputs.helmfile-args }} > ${{ steps.config.outputs.tmp }}/manifests/resources.yaml
       env:
         IMAGE_NAME: ${{ inputs.image }}
         IMAGE_TAG: ${{ inputs.image-tag }}
