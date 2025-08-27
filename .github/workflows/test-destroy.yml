@@ -70,6 +70,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    environment: terratest
     continue-on-error: true
     needs: [setup]
     services:
@@ -112,6 +113,13 @@ jobs:
           ## Use localhost to connect localstack because the commands runs not in a container
           AWS_ENDPOINT_OVERRIDE: http://localhost:4566
 
+      - uses: actions/create-github-app-token@v2
+        id: github-app
+        with:
+          app-id: ${{ vars.BOT_GITHUB_APP_ID }}
+          private-key: ${{ secrets.BOT_GITHUB_APP_PRIVATE_KEY }}
+          owner: 'cloudposse-tests'
+
       - uses: ./action
         id: current
         with:
@@ -122,7 +130,7 @@ jobs:
           path: ./action/test/helmfile/helmfile.yaml
           application: test-app
           ssm-path: platform/default
-          github-pat: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          github-pat:  ${{ steps.github-app.outputs.token }}
           image: nginx
           image-tag: ${{ needs.setup.outputs.random }}
           operation: destroy
@@ -140,6 +148,7 @@ jobs:
 
   assert:
     runs-on: ubuntu-latest
+    environment: terratest    
     needs: [setup, test]
     steps:
       - uses: nick-fields/assert-action@v1
@@ -148,6 +157,13 @@ jobs:
           actual: "${{ needs.test.outputs.sha }}"
           comparison: notEqual
 
+      - uses: actions/create-github-app-token@v2
+        id: github-app
+        with:
+          app-id: ${{ vars.BOT_GITHUB_APP_ID }}
+          private-key: ${{ secrets.BOT_GITHUB_APP_PRIVATE_KEY }}
+          owner: 'cloudposse-tests'
+
       - uses: jiangxin/file-exists-action@v1
         id: resources
         with:
@@ -155,7 +171,7 @@ jobs:
           ref: ${{ needs.test.outputs.sha }}
           path: plat/ue2-sandbox/apps/staging/test-app/manifests/resources.yaml
           type: file
-          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          token: ${{ steps.github-app.outputs.token }}
 
       - uses: nick-fields/assert-action@v1
         with:
