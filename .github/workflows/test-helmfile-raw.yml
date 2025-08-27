@@ -36,6 +36,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    environment: terratest
     continue-on-error: true
     needs: [setup]
     services:
@@ -78,6 +79,13 @@ jobs:
           ## Use localhost to connect localstack because the commands runs not in a container
           AWS_ENDPOINT_OVERRIDE: http://localhost:4566
 
+      - uses: actions/create-github-app-token@v2
+        id: github-app
+        with:
+          app-id: ${{ vars.BOT_GITHUB_APP_ID }}
+          private-key: ${{ secrets.BOT_GITHUB_APP_PRIVATE_KEY }}
+          owner: 'cloudposse-tests'
+
       - uses: ./action
         id: current
         with:
@@ -88,7 +96,7 @@ jobs:
           path: ./action/test/helmfile/helmfile.yaml
           application: test-app
           ssm-path: platform/default
-          github-pat: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          github-pat: ${{ steps.github-app.outputs.token }}
           image: nginx
           image-tag: ${{ needs.setup.outputs.random }}
           synchronously: true
@@ -110,13 +118,21 @@ jobs:
 
   argocd:
     runs-on: ubuntu-latest
+    environment: terratest
     needs: [setup]
     steps:
+      - uses: actions/create-github-app-token@v2
+        id: github-app
+        with:
+          app-id: ${{ vars.BOT_GITHUB_APP_ID }}
+          private-key: ${{ secrets.BOT_GITHUB_APP_PRIVATE_KEY }}
+          owner: 'cloudposse-tests'
+    
       - name: Checkout Argo Configuration
         uses: actions/checkout@v3
         with:
           repository: cloudposse-tests/argocd-deploy-non-prod-test
-          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          token: ${{ steps.github-app.outputs.token }}
           path: ./status
 
       - name: wait-for-commit
@@ -166,12 +182,13 @@ jobs:
         with:
           repo: ${{ github.repository }}
           sha: ${{ github.sha }}
-          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          token: ${{ steps.github-app.outputs.token }}
           status: success
           context: continuous-delivery/${{ needs.setup.outputs.environment }}.test-app
 
   assert:
     runs-on: ubuntu-latest
+    environment: terratest
     needs: [setup, test, argocd]
     steps:
       - uses: nick-fields/assert-action@v1
@@ -190,12 +207,19 @@ jobs:
           actual: "${{ needs.test.outputs.sha }}"
           comparison: notEqual
 
+      - uses: actions/create-github-app-token@v2
+        id: github-app
+        with:
+          app-id: ${{ vars.BOT_GITHUB_APP_ID }}
+          private-key: ${{ secrets.BOT_GITHUB_APP_PRIVATE_KEY }}
+          owner: 'cloudposse-tests'
+
       - name: Checkout Argo Configuration
         uses: actions/checkout@v3
         with:
           repository: cloudposse/argocd-deploy-non-prod-test
           ref: ${{ needs.test.outputs.sha }}
-          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          token: ${{ steps.github-app.outputs.token }}
           path: ./assert
 
       - name: Get Image
