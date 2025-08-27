@@ -141,7 +141,7 @@ jobs:
         run: |
           echo "Wait for commit"
 
-          SEEK_MESSAGE="Deploy cloudposse-tests/github-action-deploy-argocd SHA ${{ github.sha }} RUN ${{ github.run_id }} ATEMPT ${{ github.run_attempt }}"
+          SEEK_MESSAGE="Deploy cloudposse/github-action-deploy-argocd SHA ${{ github.sha }} RUN ${{ github.run_id }} ATEMPT ${{ github.run_attempt }}"
           echo ${SEEK_MESSAGE}
           
           cd ./status
