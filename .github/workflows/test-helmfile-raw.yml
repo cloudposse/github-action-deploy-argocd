@@ -182,7 +182,7 @@ jobs:
         with:
           repo: ${{ github.repository }}
           sha: ${{ github.sha }}
-          token: ${{ steps.github-app.outputs.token }}
+          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           status: success
           context: continuous-delivery/${{ needs.setup.outputs.environment }}.test-app
 
