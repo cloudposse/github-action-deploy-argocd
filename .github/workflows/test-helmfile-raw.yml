@@ -81,7 +81,7 @@ jobs:
       - uses: ./action
         id: current
         with:
-          cluster: https://github.com/cloudposse-corp/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
+          cluster: https://github.com/cloudposse-tests/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
           toolchain: helmfile
           environment: ${{ needs.setup.outputs.environment }}
           namespace: ${{ needs.setup.outputs.environment }}
@@ -115,7 +115,7 @@ jobs:
       - name: Checkout Argo Configuration
         uses: actions/checkout@v3
         with:
-          repository: cloudposse-corp/argocd-deploy-non-prod-test
+          repository: cloudposse-tests/argocd-deploy-non-prod-test
           token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           path: ./status
 
