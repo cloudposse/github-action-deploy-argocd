@@ -131,12 +131,13 @@ runs:
         force: true
 
     - name: Setup helmfile
-      uses: mamezou-tech/setup-helmfile@v1.2.0
+      uses: mamezou-tech/setup-helmfile@v2.1.0
       if: ${{ inputs.operation == 'deploy' }}
       with:
         helmfile-version: "${{ inputs.helmfile-version }}"
         helm-version: "${{ inputs.helm-version }}"
         install-kubectl: false
+        install-helm-plugins: false
 
     - name: Setup node
       uses: actions/setup-node@v4
