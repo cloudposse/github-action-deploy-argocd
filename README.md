@@ -151,6 +151,8 @@ Destroy environment
 | helm-version | Helm version | v3.10.2 | false |
 | helmfile-args | Additional helmfile arguments |  | false |
 | helmfile-version | Helmfile version | v0.148.1 | false |
+| git-user-email | Git user email for commits | bot@example.com | false |
+| git-user-name | Git user name for commits | cloudpossebot | false |
 | image | Docker image | N/A | true |
 | image-tag | Docker image tag | N/A | true |
 | namespace | Kubernetes namespace | N/A | true |

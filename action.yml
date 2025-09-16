@@ -112,7 +112,15 @@ inputs:
   helmfile-version:
     description: "Helmfile version"
     required: false
-    default: "v0.148.1"    
+    default: "v0.148.1"
+  git-user-email:
+    description: "Git user email for commits"
+    required: false
+    default: "bot@example.com"
+  git-user-name:
+    description: "Git user name for commits"
+    required: false
+    default: "cloudpossebot"
 outputs:
   webapp-url:
     description: "Web Application url"
@@ -360,8 +368,8 @@ runs:
         command: |-
           set -e
           
-          git config --global user.email "bot@example.com"
-          git config --global user.name "cloudpossebot"
+          git config --global user.email "${{ inputs.git-user-email }}"
+          git config --global user.name "${{ inputs.git-user-name }}"
 
           pushd ./${{ steps.destination_dir.outputs.name }}
           
