@@ -240,7 +240,8 @@ runs:
     - name: Create empty platform context
       if: ${{ inputs.operation == 'deploy' && inputs.ssm-path == '' }}
       shell: bash
-      run: echo 'platform: {}' > ./platform.yaml
+      run: |
+        echo 'platform: {}' > ./platform.yaml
 
     - name: Read platform metadata
       if: ${{ inputs.operation == 'deploy' && inputs.ssm-path != '' }}
