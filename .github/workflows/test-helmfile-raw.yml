@@ -93,7 +93,7 @@ jobs:
           toolchain: helmfile
           environment: ${{ needs.setup.outputs.environment }}
           namespace: ${{ needs.setup.outputs.environment }}
-          path: ./action/test/helmfile/helmfile.yaml
+          path: ./action/test/helmfile/helmfile.yaml.gotmpl
           application: test-app
           ssm-path: platform/default
           github-pat: ${{ steps.github-app.outputs.token }}
