@@ -4,6 +4,7 @@ environments:
   staging:
   production:
 
+---
 
 repositories:
 # Cloud Posse incubator repo of helm charts
