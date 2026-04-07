@@ -108,11 +108,11 @@ inputs:
   helm-version:
     description: "Helm version"
     required: false
-    default: "v3.10.2"
+    default: "v3.20.1"
   helmfile-version:
     description: "Helmfile version"
     required: false
-    default: "v0.148.1"    
+    default: "v1.4.3"    
 outputs:
   webapp-url:
     description: "Web Application url"
@@ -131,7 +131,7 @@ runs:
         force: true
 
     - name: Setup helmfile
-      uses: mamezou-tech/setup-helmfile@v1.2.0
+      uses: mamezou-tech/setup-helmfile@v2.2.0
       if: ${{ inputs.operation == 'deploy' }}
       with:
         helmfile-version: "${{ inputs.helmfile-version }}"
