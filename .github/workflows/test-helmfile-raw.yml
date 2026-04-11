@@ -16,6 +16,10 @@ on:
         required: false
         type: string     
 
+permissions:
+  pull-requests: write
+  statuses: write
+
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -182,7 +186,7 @@ jobs:
         with:
           repo: ${{ github.repository }}
           sha: ${{ github.sha }}
-          token: ${{ steps.github-app.outputs.token }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           status: success
           context: continuous-delivery/${{ needs.setup.outputs.environment }}.test-app
 
