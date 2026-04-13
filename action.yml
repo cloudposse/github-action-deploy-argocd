@@ -281,7 +281,7 @@ runs:
       id: arguments
       uses: cloudposse/github-action-yaml-config-query@v1.0.1
       with:
-        query: .${{ steps.resolved_kube_version.outputs.value == '' }}
+        query: ."${{ steps.resolved_kube_version.outputs.value == '' }}"
         config: |-
           true: 
             kube_version: ""
@@ -357,7 +357,7 @@ runs:
       id: ref
       uses: cloudposse/github-action-yaml-config-query@v1.0.1
       with:
-        query: .${{ inputs.gitref-sha == '' }}
+        query: ."${{ inputs.gitref-sha == '' }}"
         config: |-
           true: 
             value: ${{ inputs.ref }}
