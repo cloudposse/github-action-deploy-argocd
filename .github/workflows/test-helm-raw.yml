@@ -76,7 +76,7 @@ jobs:
           ## Use localhost to connect localstack because the commands runs not in a container
           AWS_ENDPOINT_OVERRIDE: http://localhost:4566
 
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: github-app
         with:
           app-id: ${{ vars.BOT_GITHUB_APP_ID }}
@@ -131,7 +131,7 @@ jobs:
           actual: "${{ needs.test.outputs.sha }}"
           comparison: notEqual
 
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: github-app
         with:
           app-id: ${{ vars.BOT_GITHUB_APP_ID }}
