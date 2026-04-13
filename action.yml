@@ -108,11 +108,11 @@ inputs:
   helm-version:
     description: "Helm version"
     required: false
-    default: "v3.10.2"
+    default: "v3.20.1"
   helmfile-version:
     description: "Helmfile version"
     required: false
-    default: "v0.148.1"    
+    default: "v1.4.3"    
 outputs:
   webapp-url:
     description: "Web Application url"
@@ -131,7 +131,7 @@ runs:
         force: true
 
     - name: Setup helmfile
-      uses: mamezou-tech/setup-helmfile@v1.2.0
+      uses: mamezou-tech/setup-helmfile@v2.2.0
       if: ${{ inputs.operation == 'deploy' }}
       with:
         helmfile-version: "${{ inputs.helmfile-version }}"
@@ -145,11 +145,18 @@ runs:
 
     - name: Install git-url-parse
       shell: bash
-      run: npm install git-url-parse@14.0.0
+      run: |
+        mkdir -p ${{ runner.temp }}/action-deps
+        cd ${{ runner.temp }}/action-deps
+        npm install git-url-parse@14.0.0 --no-save
+      env:
+        NPM_CONFIG_USERCONFIG: /dev/null
 
     - name: Parse git URL for destination
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea #v7.0.1, node 20
       id: destination
+      env:
+        NODE_PATH: ${{ runner.temp }}/action-deps/node_modules
       with:
         script: |
           const GitUrlParse = require("git-url-parse");
