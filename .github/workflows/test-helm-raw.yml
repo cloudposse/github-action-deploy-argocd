@@ -47,7 +47,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           path: ./action
 
@@ -139,7 +139,7 @@ jobs:
           owner: 'cloudposse-tests'
 
       - name: Checkout Argo Configuration
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           repository: cloudposse-tests/argocd-deploy-non-prod-test
           ref: ${{ needs.test.outputs.sha }}
