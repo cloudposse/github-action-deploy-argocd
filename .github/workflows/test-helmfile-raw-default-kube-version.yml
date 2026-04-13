@@ -5,7 +5,16 @@ on:
 #  # Added pull_request to register workflow from the PR.
 #  # Read more https://stackoverflow.com/questions/63362126/github-actions-how-to-run-a-workflow-created-on-a-non-master-branch-from-the-wo
 #  pull_request: {}
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "The fully-formed ref of the branch or tag that triggered the workflow run"
+        required: false
+        type: string
+      sha:
+        description: "The sha of the commit that triggered the workflow run"
+        required: false
+        type: string     
 
 jobs:
   setup:
@@ -25,11 +34,12 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    environment: terratest
     continue-on-error: true
     needs: [setup]
     services:
       localstack:
-        image: localstack/localstack:2.1.0
+        image: localstack/localstack:4.14.0
         ports:
           - 4566:4566
           - 4510-4559:4510-4559
@@ -38,7 +48,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           path: ./action
 
@@ -61,17 +71,24 @@ jobs:
           ## Use localhost to connect localstack because the commands runs not in a container
           AWS_ENDPOINT_OVERRIDE: http://localhost:4566
 
+      - uses: actions/create-github-app-token@v3
+        id: github-app
+        with:
+          app-id: ${{ vars.BOT_GITHUB_APP_ID }}
+          private-key: ${{ secrets.BOT_GITHUB_APP_PRIVATE_KEY }}
+          owner: 'cloudposse-tests'
+
       - uses: ./action
         id: current
         with:
-          cluster: https://github.com/cloudposse/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
+          cluster: https://github.com/cloudposse-tests/argocd-deploy-non-prod-test/blob/main/plat/ue2-sandbox/apps
           toolchain: helmfile
           environment: staging
           namespace: staging
-          path: ./action/test/helmfile/helmfile.yaml
+          path: ./action/test/helmfile/helmfile.yaml.gotmpl
           application: test-app
           ssm-path: platform/default
-          github-pat: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          github-pat: ${{ steps.github-app.outputs.token }}
           image: nginx
           image-tag: ${{ needs.setup.outputs.random }}
           repository: ${{ github.repository }}
@@ -82,8 +99,8 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
           ## Use localhost to connect localstack because the commands runs not in a container
           AWS_ENDPOINT_OVERRIDE: http://localhost:4566
-          ## Use localstack to connect localstack because the chamber runs in a container
-          CHAMBER_AWS_SSM_ENDPOINT: http://localstack:4566/
+          ## Use localhost to connect localstack because chamber does not run in a container
+          CHAMBER_AWS_SSM_ENDPOINT: http://localhost:4566/
 
     outputs:
       status: ${{ steps.current.outcome }}
@@ -92,30 +109,38 @@ jobs:
 
   assert:
     runs-on: ubuntu-latest
+    environment: terratest
     needs: [setup, test]
     steps:
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: "success"
           actual: "${{ needs.test.outputs.status }}"
 
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: "https://example-app.example.com/dashboard"
           actual: "${{ needs.test.outputs.result }}"
 
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: ""
           actual: "${{ needs.test.outputs.sha }}"
           comparison: notEqual
 
-      - name: Checkout Argo Configuration
-        uses: actions/checkout@v3
+      - uses: actions/create-github-app-token@v3
+        id: github-app
         with:
-          repository: cloudposse/argocd-deploy-non-prod-test
+          app-id: ${{ vars.BOT_GITHUB_APP_ID }}
+          private-key: ${{ secrets.BOT_GITHUB_APP_PRIVATE_KEY }}
+          owner: 'cloudposse-tests'
+
+      - name: Checkout Argo Configuration
+        uses: actions/checkout@v6
+        with:
+          repository: cloudposse-tests/argocd-deploy-non-prod-test
           ref: ${{ needs.test.outputs.sha }}
-          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          token: ${{ steps.github-app.outputs.token }}
           path: ./assert
 
       - name: Get Image
@@ -128,7 +153,7 @@ jobs:
           )
           echo "value=${image}" >> $GITHUB_OUTPUT
 
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: "nginx:${{ needs.setup.outputs.random }}"
           actual: "${{ steps.image.outputs.value }}"
@@ -143,7 +168,7 @@ jobs:
           )
           echo "value=${ingress}" >> $GITHUB_OUTPUT
 
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: "networking.k8s.io/v1"
           actual: "${{ steps.ingress.outputs.value }}"
@@ -158,7 +183,7 @@ jobs:
           )
           echo "value=${app_commit}" >> $GITHUB_OUTPUT
 
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: "${{ github.sha }}"
           actual: "${{ steps.app_commit.outputs.value }}"
