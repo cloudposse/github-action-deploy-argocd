@@ -153,13 +153,14 @@ Destroy environment
 | helmfile-version | Helmfile version | v1.4.3 | false |
 | image | Docker image | N/A | true |
 | image-tag | Docker image tag | N/A | true |
+| kube-version | Kubernetes version for helm/helmfile rendering (e.g. `1.28`). When provided, skips SSM metadata lookup via chamber. |  | false |
 | namespace | Kubernetes namespace | N/A | true |
 | operation | Operation with helmfiles. (valid options - `deploy`, `destroy`) | deploy | true |
 | path | The path where lives the helmfile or helm chart. | N/A | true |
 | ref | Git ref | N/A | true |
 | release\_label\_name | The name of the label used to describe the helm release | release | false |
 | repository | Application GitHub repository full name | N/A | true |
-| ssm-path | SSM path to read environment secrets | N/A | true |
+| ssm-path | SSM path to read environment secrets |  | false |
 | synchronously | Wait until ArgoCD successfully apply the changes | false | false |
 | toolchain | Toolchain ('helm', 'helmfile') | helmfile | false |
 | values\_file | Helm values file, this can be a single file or a comma separated list of files |  | false |
