@@ -16,6 +16,10 @@ on:
         required: false
         type: string     
 
+permissions:
+  pull-requests: write
+  statuses: write
+
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -93,7 +97,7 @@ jobs:
           toolchain: helmfile
           environment: ${{ needs.setup.outputs.environment }}
           namespace: ${{ needs.setup.outputs.environment }}
-          path: ./action/test/helmfile/helmfile.yaml
+          path: ./action/test/helmfile/helmfile.yaml.gotmpl
           application: test-app
           ssm-path: platform/default
           github-pat: ${{ steps.github-app.outputs.token }}
@@ -182,7 +186,7 @@ jobs:
         with:
           repo: ${{ github.repository }}
           sha: ${{ github.sha }}
-          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           status: success
           context: continuous-delivery/${{ needs.setup.outputs.environment }}.test-app
 

@@ -85,7 +85,7 @@ jobs:
           toolchain: helmfile
           environment: staging
           namespace: staging
-          path: ./action/test/helmfile/helmfile.yaml
+          path: ./action/test/helmfile/helmfile.yaml.gotmpl
           application: test-app
           ssm-path: platform/default
           github-pat: ${{ steps.github-app.outputs.token }}
