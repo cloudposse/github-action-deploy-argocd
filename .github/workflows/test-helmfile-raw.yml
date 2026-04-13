@@ -16,6 +16,10 @@ on:
         required: false
         type: string     
 
+permissions:
+  pull-requests: write
+  statuses: write
+
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -41,7 +45,7 @@ jobs:
     needs: [setup]
     services:
       localstack:
-        image: localstack/localstack:2.1.0
+        image: localstack/localstack:4.14.0
         ports:
           - 4566:4566
           - 4510-4559:4510-4559
@@ -50,7 +54,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           path: ./action
 
@@ -79,7 +83,7 @@ jobs:
           ## Use localhost to connect localstack because the commands runs not in a container
           AWS_ENDPOINT_OVERRIDE: http://localhost:4566
 
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: github-app
         with:
           app-id: ${{ vars.BOT_GITHUB_APP_ID }}
@@ -93,7 +97,7 @@ jobs:
           toolchain: helmfile
           environment: ${{ needs.setup.outputs.environment }}
           namespace: ${{ needs.setup.outputs.environment }}
-          path: ./action/test/helmfile/helmfile.yaml
+          path: ./action/test/helmfile/helmfile.yaml.gotmpl
           application: test-app
           ssm-path: platform/default
           github-pat: ${{ steps.github-app.outputs.token }}
@@ -121,7 +125,7 @@ jobs:
     environment: terratest
     needs: [setup]
     steps:
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: github-app
         with:
           app-id: ${{ vars.BOT_GITHUB_APP_ID }}
@@ -129,7 +133,7 @@ jobs:
           owner: 'cloudposse-tests'
     
       - name: Checkout Argo Configuration
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           repository: cloudposse-tests/argocd-deploy-non-prod-test
           token: ${{ steps.github-app.outputs.token }}
@@ -182,7 +186,7 @@ jobs:
         with:
           repo: ${{ github.repository }}
           sha: ${{ github.sha }}
-          token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           status: success
           context: continuous-delivery/${{ needs.setup.outputs.environment }}.test-app
 
@@ -191,23 +195,23 @@ jobs:
     environment: terratest
     needs: [setup, test, argocd]
     steps:
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: "success"
           actual: "${{ needs.test.outputs.status }}"
 
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: "https://example-app.example.com/dashboard"
           actual: "${{ needs.test.outputs.result }}"
 
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: ""
           actual: "${{ needs.test.outputs.sha }}"
           comparison: notEqual
 
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: github-app
         with:
           app-id: ${{ vars.BOT_GITHUB_APP_ID }}
@@ -215,7 +219,7 @@ jobs:
           owner: 'cloudposse-tests'
 
       - name: Checkout Argo Configuration
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           repository: cloudposse-tests/argocd-deploy-non-prod-test
           ref: ${{ needs.test.outputs.sha }}
@@ -232,7 +236,7 @@ jobs:
           )
           echo "value=${image}" >> $GITHUB_OUTPUT
 
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: "nginx:${{ needs.setup.outputs.random }}"
           actual: "${{ steps.image.outputs.value }}"
@@ -247,7 +251,7 @@ jobs:
           )
           echo "value=${ingress}" >> $GITHUB_OUTPUT
 
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: "networking.k8s.io/v1beta1"
           actual: "${{ steps.ingress.outputs.value }}"
@@ -262,7 +266,7 @@ jobs:
           )
           echo "value=${name}" >> $GITHUB_OUTPUT
 
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: "${{ needs.setup.outputs.environment }}.test-app"
           actual: "${{ steps.name.outputs.value }}"
@@ -278,7 +282,7 @@ jobs:
           )
           echo "value=${app_commit}" >> $GITHUB_OUTPUT
 
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: "${{ github.sha }}"
           actual: "${{ steps.app_commit.outputs.value }}"

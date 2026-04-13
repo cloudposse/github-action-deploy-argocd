@@ -20,7 +20,8 @@ inputs:
     required: false
     default: helmfile
   ssm-path:
-    required: true
+    required: false
+    default: ''
     description: SSM path to read environment secrets
   operation:
     description: Operation with helmfiles. (valid options - `deploy`, `destroy`)
@@ -108,11 +109,15 @@ inputs:
   helm-version:
     description: "Helm version"
     required: false
-    default: "v3.10.2"
+    default: "v3.20.1"
   helmfile-version:
     description: "Helmfile version"
     required: false
-    default: "v0.148.1"    
+    default: "v1.4.3"    
+  kube-version:
+    description: "Kubernetes version for helm/helmfile rendering (e.g. `1.28`). When provided, skips SSM metadata lookup via chamber."
+    required: false
+    default: ""    
 outputs:
   webapp-url:
     description: "Web Application url"
@@ -131,7 +136,7 @@ runs:
         force: true
 
     - name: Setup helmfile
-      uses: mamezou-tech/setup-helmfile@v1.2.0
+      uses: mamezou-tech/setup-helmfile@v2.2.0
       if: ${{ inputs.operation == 'deploy' }}
       with:
         helmfile-version: "${{ inputs.helmfile-version }}"
@@ -139,17 +144,24 @@ runs:
         install-kubectl: false
 
     - name: Setup node
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
-        node-version: 20
+        node-version: 24
 
     - name: Install git-url-parse
       shell: bash
-      run: npm install git-url-parse@14.0.0
+      run: |
+        mkdir -p ${{ runner.temp }}/action-deps
+        cd ${{ runner.temp }}/action-deps
+        npm install git-url-parse@14.0.0 --no-save
+      env:
+        NPM_CONFIG_USERCONFIG: /dev/null
 
     - name: Parse git URL for destination
-      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea #v7.0.1, node 20
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0, node 20
       id: destination
+      env:
+        NODE_PATH: ${{ runner.temp }}/action-deps/node_modules
       with:
         script: |
           const GitUrlParse = require("git-url-parse");
@@ -178,14 +190,14 @@ runs:
 
     - name: Config
       id: config
-      uses: cloudposse/github-action-yaml-config-query@0.1.3
+      uses: cloudposse/github-action-yaml-config-query@v1.0.1
       with:
         config: |-
           tmp: ./tmp/${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}
           path: ${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}
 
     - name: Checkout Argo Configuration
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
       with:
         repository: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
         ref: ${{ steps.destination.outputs.ref }}
@@ -193,7 +205,7 @@ runs:
         path: ${{ steps.destination_dir.outputs.name }}
 
     - name: Setup chamber
-      if: ${{ inputs.operation == 'deploy' }}
+      if: ${{ inputs.operation == 'deploy' && inputs.ssm-path != '' }}
       shell: bash
       env:
         version: v2.14.1
@@ -220,26 +232,32 @@ runs:
         sudo install chamber-${version}-${os}-${arch} /usr/local/bin/chamber
 
     - name: Read platform context
-      if: ${{ inputs.operation == 'deploy' }}
+      if: ${{ inputs.operation == 'deploy' && inputs.ssm-path != '' }}
       shell: bash
       run: |
         chamber --verbose export ${{ inputs.ssm-path }}/${{ inputs.environment }} --format yaml --output-file ./platform.yaml
 
     - name: YQ Platform settings
-      if: ${{ inputs.operation == 'deploy' }}
+      if: ${{ inputs.operation == 'deploy' && inputs.ssm-path != '' }}
       shell: bash
       run: |
         sudo chmod 777 ./platform.yaml 
         yq --exit-status --no-colors --inplace eval '{"platform": .}' ./platform.yaml
 
+    - name: Create empty platform context
+      if: ${{ inputs.operation == 'deploy' && inputs.ssm-path == '' }}
+      shell: bash
+      run: |
+        echo 'platform: {}' > ./platform.yaml
+
     - name: Read platform metadata
-      if: ${{ inputs.operation == 'deploy' }}
+      if: ${{ inputs.operation == 'deploy' && inputs.ssm-path != '' }}
       shell: bash
       run: |
         chamber --verbose export ${{ inputs.ssm-path }}/_metadata --format yaml --output-file ./_metadata.yaml
 
     - name: YQ Platform settings
-      if: ${{ inputs.operation == 'deploy' }}
+      if: ${{ inputs.operation == 'deploy' && inputs.ssm-path != '' }}
       shell: bash
       id: metadata
       run: |
@@ -247,17 +265,28 @@ runs:
           echo "${output}" >> $GITHUB_OUTPUT ;
         done
 
+    - name: Resolve kube version
+      id: resolved_kube_version
+      if: ${{ inputs.operation == 'deploy' }}
+      shell: bash
+      run: |
+        kube_version="${{ inputs.kube-version }}"
+        if [ -z "$kube_version" ] && [ -n "${{ inputs.ssm-path }}" ]; then
+          kube_version="${{ steps.metadata.outputs.kube_version }}"
+        fi
+        echo "value=$kube_version" >> $GITHUB_OUTPUT
+
     - name: Context
       if: ${{ inputs.operation == 'deploy' }}
       id: arguments
-      uses: cloudposse/github-action-yaml-config-query@0.1.3
+      uses: cloudposse/github-action-yaml-config-query@v1.0.1
       with:
-        query: .${{ steps.metadata.outputs.kube_version == '' }}
+        query: ."${{ steps.resolved_kube_version.outputs.value == '' }}"
         config: |-
           true: 
             kube_version: ""
           false:
-            kube_version: --kube-version=${{ steps.metadata.outputs.kube_version }}      
+            kube_version: --kube-version=${{ steps.resolved_kube_version.outputs.value }}      
 
 
     - name: Ensure argocd repo structure
@@ -326,9 +355,9 @@ runs:
     - name: Deplicated Ref
       if: ${{ inputs.operation == 'deploy' }}
       id: ref
-      uses: cloudposse/github-action-yaml-config-query@0.1.3
+      uses: cloudposse/github-action-yaml-config-query@v1.0.1
       with:
-        query: .${{ inputs.gitref-sha == '' }}
+        query: ."${{ inputs.gitref-sha == '' }}"
         config: |-
           true: 
             value: ${{ inputs.ref }}
@@ -337,7 +366,7 @@ runs:
 
     - name: Config render
       if: ${{ inputs.operation == 'deploy' }}
-      uses: 1arp/create-a-file-action@0.2
+      uses: 1arp/create-a-file-action@0.4
       with:
         path: ${{ steps.config.outputs.tmp }}
         file: config.yaml
@@ -350,7 +379,7 @@ runs:
           manifests: ${{ steps.config.outputs.path }}/manifests
 
     - name: Push to Github
-      uses: nick-fields/retry@v2
+      uses: nick-fields/retry@v4
       id: git
       with:
         max_attempts: ${{ inputs.commit-retry-count }}
@@ -408,7 +437,7 @@ runs:
           echo "token=${{ inputs.commit-status-github-token }}" >> $GITHUB_OUTPUT
         fi
 
-    - uses: cloudposse/github-action-wait-commit-status@0.2.0
+    - uses: cloudposse/github-action-wait-commit-status@v0.2.1
       if: ${{ inputs.synchronously == 'true' && inputs.operation == 'deploy' }}
       with:
         repository: ${{ inputs.repository }}
