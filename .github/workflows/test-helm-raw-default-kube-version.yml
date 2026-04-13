@@ -38,7 +38,7 @@ jobs:
     needs: [setup]
     services:
       localstack:
-        image: localstack/localstack:2.1.0
+        image: localstack/localstack:4.14.0
         ports:
           - 4566:4566
           - 4510-4559:4510-4559
@@ -47,7 +47,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           path: ./action
 
@@ -70,7 +70,7 @@ jobs:
           ## Use localhost to connect localstack because the commands runs not in a container
           AWS_ENDPOINT_OVERRIDE: http://localhost:4566
 
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: github-app
         with:
           app-id: ${{ vars.BOT_GITHUB_APP_ID }}
@@ -109,23 +109,23 @@ jobs:
     environment: terratest    
     needs: [setup, test]
     steps:
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: "success"
           actual: "${{ needs.test.outputs.status }}"
 
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: "https://example-app.example.com/dashboard"
           actual: "${{ needs.test.outputs.result }}"
 
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: ""
           actual: "${{ needs.test.outputs.sha }}"
           comparison: notEqual
 
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: github-app
         with:
           app-id: ${{ vars.BOT_GITHUB_APP_ID }}
@@ -133,7 +133,7 @@ jobs:
           owner: 'cloudposse-tests'          
 
       - name: Checkout Argo Configuration
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           repository: cloudposse-tests/argocd-deploy-non-prod-test
           ref: ${{ needs.test.outputs.sha }}
@@ -150,7 +150,7 @@ jobs:
           )
           echo "value=${image}" >> $GITHUB_OUTPUT
 
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: "nginx:${{ needs.setup.outputs.random }}"
           actual: "${{ steps.image.outputs.value }}"
@@ -165,7 +165,7 @@ jobs:
           )
           echo "value=${ingress}" >> $GITHUB_OUTPUT
 
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: "networking.k8s.io/v1"
           actual: "${{ steps.ingress.outputs.value }}"

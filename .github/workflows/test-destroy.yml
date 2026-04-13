@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       localstack:
-        image: localstack/localstack:2.1.0
+        image: localstack/localstack:4.14.0
         ports:
           - 4566:4566
           - 4510-4559:4510-4559
@@ -30,7 +30,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           path: ./action
 
@@ -75,7 +75,7 @@ jobs:
     needs: [setup]
     services:
       localstack:
-        image: localstack/localstack:2.1.0
+        image: localstack/localstack:4.14.0
         ports:
           - 4566:4566
           - 4510-4559:4510-4559
@@ -84,7 +84,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           path: ./action
 
@@ -113,7 +113,7 @@ jobs:
           ## Use localhost to connect localstack because the commands runs not in a container
           AWS_ENDPOINT_OVERRIDE: http://localhost:4566
 
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: github-app
         with:
           app-id: ${{ vars.BOT_GITHUB_APP_ID }}
@@ -127,7 +127,7 @@ jobs:
           toolchain: helmfile
           environment: staging
           namespace: staging
-          path: ./action/test/helmfile/helmfile.yaml
+          path: ./action/test/helmfile/helmfile.yaml.gotmpl
           application: test-app
           ssm-path: platform/default
           github-pat:  ${{ steps.github-app.outputs.token }}
@@ -151,13 +151,13 @@ jobs:
     environment: terratest    
     needs: [setup, test]
     steps:
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: ""
           actual: "${{ needs.test.outputs.sha }}"
           comparison: notEqual
 
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: github-app
         with:
           app-id: ${{ vars.BOT_GITHUB_APP_ID }}
@@ -173,7 +173,7 @@ jobs:
           type: file
           token: ${{ steps.github-app.outputs.token }}
 
-      - uses: nick-fields/assert-action@v1
+      - uses: nick-fields/assert-action@v2
         with:
           expected: "false"
           actual: "${{ steps.resources.outputs.exists }}"
