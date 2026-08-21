@@ -197,7 +197,7 @@ runs:
           path: ${{ steps.destination.outputs.filepath }}/${{ inputs.namespace }}/${{ inputs.application }}
 
     - name: Checkout Argo Configuration
-      uses: actions/checkout@v6
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         repository: ${{ steps.destination.outputs.owner }}/${{ steps.destination.outputs.name }}
         ref: ${{ steps.destination.outputs.ref }}
@@ -437,7 +437,7 @@ runs:
           echo "token=${{ inputs.commit-status-github-token }}" >> $GITHUB_OUTPUT
         fi
 
-    - uses: cloudposse/github-action-wait-commit-status@v0.2.1
+    - uses: cloudposse/github-action-wait-commit-status@968fc17eddf4d9f4f2203edb4c72814a1d8bc650 # v0.2.2
       if: ${{ inputs.synchronously == 'true' && inputs.operation == 'deploy' }}
       with:
         repository: ${{ inputs.repository }}
