@@ -96,6 +96,7 @@ jobs:
           github-pat: ${{ steps.github-app.outputs.token }}
           image: nginx
           image-tag: ${{ needs.setup.outputs.random }}
+          deployment-id: ${{ github.run_id }}-${{ github.run_attempt }}
         env:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
@@ -190,6 +191,21 @@ jobs:
         with:
           expected: "staging.test-app"
           actual: "${{ steps.name.outputs.value }}"
+
+      - name: Get Deployment ID
+        id: deployment_id
+        shell: bash
+        run: |-
+          deployment_id=$( \
+            yq eval-all '.deployment_id' \
+              ./assert/plat/ue2-sandbox/apps/staging/test-app/config.yaml \
+          )
+          echo "value=${deployment_id}" >> $GITHUB_OUTPUT
+
+      - uses: nick-fields/assert-action@0efd6166067d9c59d89c710fab4f79fb066f8985 # v4.0.1
+        with:
+          expected: "${{ github.run_id }}-${{ github.run_attempt }}"
+          actual: "${{ steps.deployment_id.outputs.value }}"
 
   teardown:
     runs-on: ubuntu-latest

@@ -84,6 +84,7 @@ Deploy environment
             operation: deploy
             debug: false
             synchronously: true
+            deployment-id: ${{ github.run_id }}-${{ github.run_attempt }}
   ```
 
 
@@ -125,13 +126,42 @@ Destroy environment
   ```
 
 
+### Deduping ArgoCD notifications per deploy attempt
+
+ArgoCD's notification `oncePer` trigger dedupes on whichever field you point it at. Keying it on the
+application commit means a rollback — replaying a commit ArgoCD has already notified for — is silently
+suppressed, and the rollback reports no status at all.
+
+Pass `deployment-id` a value that is unique per *deploy attempt* rather than per code state, and point
+`oncePer` at it instead:
+
+```yaml
+  - name: Deploy
+    uses: cloudposse/github-action-deploy-argocd@main
+    with:
+      # ...
+      deployment-id: ${{ github.run_id }}-${{ github.run_attempt }}
+```
+
+The value is written to the generated `config.yaml` alongside the rest of the deploy metadata:
+
+```yaml
+  app_repository: acme/example-app
+  app_commit: 6e6a0e1b0e0c4b2a9f1d3c5e7a9b1d3f5a7c9e1b
+  app_hostname: https://example-app.example.com
+  name: preview.example-app
+  namespace: preview
+  manifests: plat/ue2-sandbox/apps/preview/example-app/manifests
+  deployment_id: "12345678901-2"
+```
+
+The input is optional. Left at its empty default, the `deployment_id` key is omitted from `config.yaml`
+entirely, so callers that do not set it get byte-identical output.
 
 
 
 
-<!-- markdownlint-disable -->
 
-<!-- markdownlint-restore -->
 
 ## Inputs
 <!-- markdownlint-disable -->
@@ -147,6 +177,7 @@ Destroy environment
 | commit-status-github-token | Github token to access the app repository. Defaults to github-pat if not set. | N/A | false |
 | commit-timeout | Commit timeout (in seconds) | 60 | false |
 | debug | Debug mode | false | false |
+| deployment-id | Unique identifier for this deploy attempt (for example, the GitHub run ID joined with the run attempt). When set, it is written to `config.yaml` as `deployment\_id`, which lets ArgoCD dedupe notifications per deploy attempt instead of per commit. Left unset, the key is omitted from `config.yaml`. |  | false |
 | environment | Helmfile environment | preview | false |
 | github-pat | Github PAT to access argocd configuration repository | N/A | true |
 | gitref-sha | Git SHA (Depricated. Use `ref` instead) |  | false |

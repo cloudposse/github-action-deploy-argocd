@@ -117,7 +117,11 @@ inputs:
   kube-version:
     description: "Kubernetes version for helm/helmfile rendering (e.g. `1.28`). When provided, skips SSM metadata lookup via chamber."
     required: false
-    default: ""    
+    default: ""
+  deployment-id:
+    description: "Unique identifier for this deploy attempt (for example, the GitHub run ID joined with the run attempt). When set, it is written to `config.yaml` as `deployment_id`, which lets ArgoCD dedupe notifications per deploy attempt instead of per commit. Left unset, the key is omitted from `config.yaml`."
+    required: false
+    default: ""
 outputs:
   webapp-url:
     description: "Web Application url"
@@ -377,6 +381,15 @@ runs:
           name: ${{ inputs.namespace }}.${{ inputs.application }}
           namespace: ${{ inputs.namespace }}
           manifests: ${{ steps.config.outputs.path }}/manifests
+
+    - name: Stamp deployment id
+      if: ${{ inputs.operation == 'deploy' && inputs.deployment-id != '' }}
+      shell: bash
+      env:
+        DEPLOYMENT_ID: ${{ inputs.deployment-id }}
+        CONFIG_FILE: ${{ steps.config.outputs.tmp }}/config.yaml
+      run: |-
+        yq --exit-status --no-colors --inplace eval '.deployment_id = strenv(DEPLOYMENT_ID)' "${CONFIG_FILE}"
 
     - name: Push to Github
       uses: nick-fields/retry@v4
