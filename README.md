@@ -163,6 +163,10 @@ entirely, so callers that do not set it get byte-identical output.
 
 
 
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+
 ## Inputs
 <!-- markdownlint-disable -->
 | Name | Description | Default | Required |
