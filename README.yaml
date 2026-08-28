@@ -88,6 +88,7 @@ usage: |-
               operation: deploy
               debug: false
               synchronously: true
+              deployment-id: ${{ github.run_id }}-${{ github.run_attempt }}
     ```
 
 
@@ -127,6 +128,39 @@ usage: |-
               operation: destroy
               debug: false
     ```
+
+
+  ### Deduping ArgoCD notifications per deploy attempt
+
+  ArgoCD's notification `oncePer` trigger dedupes on whichever field you point it at. Keying it on the
+  application commit means a rollback — replaying a commit ArgoCD has already notified for — is silently
+  suppressed, and the rollback reports no status at all.
+
+  Pass `deployment-id` a value that is unique per *deploy attempt* rather than per code state, and point
+  `oncePer` at it instead:
+
+  ```yaml
+    - name: Deploy
+      uses: cloudposse/github-action-deploy-argocd@main
+      with:
+        # ...
+        deployment-id: ${{ github.run_id }}-${{ github.run_attempt }}
+  ```
+
+  The value is written to the generated `config.yaml` alongside the rest of the deploy metadata:
+
+  ```yaml
+    app_repository: acme/example-app
+    app_commit: 6e6a0e1b0e0c4b2a9f1d3c5e7a9b1d3f5a7c9e1b
+    app_hostname: https://example-app.example.com
+    name: preview.example-app
+    namespace: preview
+    manifests: plat/ue2-sandbox/apps/preview/example-app/manifests
+    deployment_id: "12345678901-2"
+  ```
+
+  The input is optional. Left at its empty default, the `deployment_id` key is omitted from `config.yaml`
+  entirely, so callers that do not set it get byte-identical output.
 
 include: []
 contributors: []

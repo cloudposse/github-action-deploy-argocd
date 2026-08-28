@@ -170,6 +170,21 @@ jobs:
           expected: "networking.k8s.io/v1"
           actual: "${{ steps.ingress.outputs.value }}"
 
+      - name: Get Deployment ID presence
+        id: deployment_id
+        shell: bash
+        run: |-
+          has_deployment_id=$( \
+            yq eval-all 'has("deployment_id")' \
+              ./assert/plat/ue2-sandbox/apps/staging/test-app/config.yaml \
+          )
+          echo "value=${has_deployment_id}" >> $GITHUB_OUTPUT
+
+      - uses: nick-fields/assert-action@0efd6166067d9c59d89c710fab4f79fb066f8985 # v4.0.1
+        with:
+          expected: "false"
+          actual: "${{ steps.deployment_id.outputs.value }}"
+
   teardown:
     runs-on: ubuntu-latest
     needs: [assert]
