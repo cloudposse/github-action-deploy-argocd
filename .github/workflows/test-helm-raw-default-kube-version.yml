@@ -89,6 +89,7 @@ jobs:
           ssm-path: platform/default
           github-pat: ${{ steps.github-app.outputs.token }}
           image: nginx
+          helm-version: v3.18.10
           image-tag: ${{ needs.setup.outputs.random }}
         env:
           AWS_ACCESS_KEY_ID: test
